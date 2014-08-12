@@ -1,13 +1,13 @@
-Js-TheNatureOfCode
-==================
+#Js-TheNatureOfCode
 
 A Javascript port of the examples and exercises contained in "The nature of code", a book by Daniel Shiffman. 
-Please visit the book website: http://natureofcode.com/book .
+Please visit the [book website](http://natureofcode.com/book).
 
-At the moment only the introductory chapter has been ported.
+##State:
 
-Usage:
-======
+The introductory chapter has been completed (along with its exercises).
+
+##Usage:
 
 In every chapter (or in the exercise folder) there's a minimalistic index.html file. 
 To run an example or exercise: 
