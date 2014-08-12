@@ -11,5 +11,5 @@ The introductory chapter has been completed (along with its exercises).
 
 In every chapter (or in the exercise folder) there's a minimalistic index.html file. 
 To run an example or exercise: 
-  #1 Modify the .html file as to include the .js file you wish to run;
-  #2 Open the .html file in the browser.
+  1. Modify the .html file as to include the .js file you wish to run;
+  2. Open the .html file in the browser.
