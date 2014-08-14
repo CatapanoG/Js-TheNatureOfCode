@@ -7,7 +7,7 @@
 //
 
 //
-// Bouncing ball
+// Exercise code
 //
 
 var theLocation, 

@@ -1,13 +1,73 @@
-// 
-// A simple Canvas 2d boilerplate
 //
-// Author: Gennaro Catapano
-// Author website: www.gennarocatapano.it
-// Version: 0.0.3
-// Date: 13-Aug-2014
+// The nature of code - Chapter 1 - Vectors
 //
-// Sets up a Canvas and a loop with 3 components:
-// init(), updateworld() and draw().
+// Exercise 1.6
+//
+// Referring back to the Introduction, implement acceleration according to Perlin noise.
+//
+
+var mover,
+	perlinCoord = new Vector2d(0,10000),
+	perlinStep = new Vector2d(0.005,0.005);
+
+function setup(canvas) {
+	mover = new Mover(canvas);
+	noise.seed(Math.random());
+}
+
+function draw(context,canvas) {
+	background(context,canvas,"black");
+
+	perlinCoord.add(perlinStep);
+
+	mover.update();
+	mover.checkEdges(canvas);
+	mover.display(context);
+}
+
+// Mover object (Js has no classes)
+	function Mover (canvas){
+		this.location = new Vector2d(
+			canvas.width/2,
+			canvas.height/2
+			);
+		this.velocity = new Vector2d(
+			0,
+			0
+			);
+		this.acceleration = new Vector2d(
+			0,
+			0
+			);
+		this.topSpeed = 5;
+	}
+
+	Mover.prototype = {
+		update: function(){
+			this.acceleration.x = noise.perlin2(perlinCoord.x,0);
+			this.acceleration.y = noise.perlin2(perlinCoord.y,0);
+
+			this.velocity.add(this.acceleration);
+			this.velocity.limit(this.topSpeed);
+			this.location.add(this.velocity);
+		},
+		display: function(context){
+			ellipse(context,this.location.x,this.location.y,16);
+		},
+		checkEdges: function(canvas) {
+			if (this.location.x > canvas.width) {
+				this.location.x = 0;
+			} else if (this.location.x < 0) {
+				this.location.x = canvas.width;
+			}
+
+			if (this.location.y > canvas.height) {
+				this.location.y = 0;
+			} else if (this.location.y < 0) {
+				this.location.y = canvas.height;
+			}
+		}
+	};
 // 
 
 //
@@ -21,7 +81,6 @@
 		viewportHeight = 900,
 		viewportWidth = 900,
 		viewportId = "viewport",
-		time = 0,
 		timeStep = 1000 / 30,
 		canvas,
 		context;
@@ -47,14 +106,21 @@
 
 		(function init(){
 			// initialize stuff here
+			 setup(canvas);
+			 //
+
+
 		}());
 		function updateWorld(){
-			time += timeStep;
 			// update logic here
-			draw();
+			 //
+			 //
+			render();
 		}
-		function draw(){
+		function render(){
 			// rendering logic here
+			 draw(context,canvas);
+			 //
 			requestAnimationFrame(updateWorld);
 		}
 	};
@@ -67,7 +133,6 @@
 var helpersStrokeStyle = "white";
 var helpersFillStyle = "grey";
 
-// draws a circumference
 function ellipse(context,x,y,radius){
 	context.fillStyle = helpersFillStyle;
 	context.strokeStyle = helpersStrokeStyle;
@@ -78,13 +143,11 @@ function ellipse(context,x,y,radius){
 	context.stroke();
 }
 
-// resets the background
 function background(context,canvas,color){
 	context.fillStyle = color;
 	context.fillRect(0,0,canvas.width,canvas.height);
 }
 
-// draws a line
 function line(context,x0,y0,x1,y1){
 	context.strokeStyle = helpersStrokeStyle;
 	context.lineWidth = 3;
