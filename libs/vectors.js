@@ -22,25 +22,44 @@ Vector2d.prototype = {
 			this.x = this.x + vector2d.x;
 			this.y = this.y + vector2d.y;
 		} else if (arguments.length === 2) {
-			//this.x = vector2d.x + otherVector2d.x,
-			//this.y = vector2d.y + otherVector2d.y
 			return new Vector2d(
 				vector2d.x + otherVector2d.x,
 				vector2d.y + otherVector2d.y
 			);
 		};
 	},
-	sub: function(vector2d){
-		this.x = this.x - vector2d.x;
-		this.y = this.y - vector2d.y;
+	sub: function(vector2d,otherVector2d){
+		if (arguments.length === 1) {
+			this.x = this.x - vector2d.x;
+			this.y = this.y - vector2d.y;
+		} else if (arguments.length === 2) {
+			return new Vector2d(
+				vector2d.x - otherVector2d.x,
+				vector2d.y - otherVector2d.y
+			);
+		};
 	},
-	mult: function(scalar){
-		this.x = this.x * scalar;
-		this.y = this.y * scalar;
+	mult: function(scalar,otherVector2d){
+		if (arguments.length === 1) {
+			this.x = this.x * scalar;
+			this.y = this.y * scalar;
+		} else if (arguments.length === 2) {
+			return new Vector2d(
+				scalar * otherVector2d.x,
+				scalar * otherVector2d.y
+			);
+		};
 	},
-	div: function(scalar){
-		this.x = this.x / scalar;
-		this.y = this.y / scalar;
+	div: function(scalar,otherVector2d){
+		if (arguments.length === 1) {
+			this.x = this.x / scalar;
+			this.y = this.y / scalar;
+		} else if (arguments.length === 2) {
+			return new Vector2d(
+				otherVector2d.x / scalar,
+				otherVector2d.y / scalar
+			);
+		};
 	},
 	mag: function(){
 		return Math.sqrt(this.x*this.x + this.y*this.y);
@@ -121,15 +140,20 @@ Vector3d.prototype = {
 
 // testing code
 
-
-console.log("Initial vector:");
-var vec1 = new Vector2d(30,30);
-var vec2 = new Vector2d(7,9);
-var vec3 = Vector2d.prototype.add(vec1,vec2);
+/*
+console.log("Vector 1:");
+var vec1 = new Vector2d(1,2);
 console.log(vec1);
-console.log("magnitude: " + vec1.mag());
+console.log("Vector 2:");
+var vec2 = new Vector2d(3,5);
+console.log(vec2);
 console.log(" ---- ");
-//vec3.add(vec1,vec2);
+
+console.log("vec3=vec1 __ vec2: ");
+var vec3 = Vector2d.prototype.sub(vec1,vec2);
 console.log(vec3);
 
-
+console.log("vec1=vec1 __ vec2:");
+vec1.sub(vec2);
+console.log(vec1);
+*/

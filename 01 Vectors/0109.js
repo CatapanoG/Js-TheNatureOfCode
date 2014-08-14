@@ -1,7 +1,7 @@
 //
 // The nature of code - Ch.1 Vectors
 //
-// Example 1.7: Motion 101 (velocity)
+// Example 1.9: Motion 101 (velocity and random acceleration)
 //
 // Ported by: Gennaro Catapano
 //

@@ -1,7 +1,7 @@
 //
 // The nature of code - Ch.1 Vectors
 //
-// Example 1.8: Motion 101 (velocity and constant acceleration)
+// Example 1.10: Accelerating towards the mouse
 //
 // Ported by: Gennaro Catapano
 //
@@ -10,7 +10,9 @@
 // Exercise code
 //
 
-var mover;
+var mover,
+	mouse = new Vector2d(0,0),
+	dir;
 
 function setup(canvas) {
 	mover = new Mover(canvas);
@@ -35,14 +37,20 @@ function draw(context,canvas) {
 			0
 			);
 		this.acceleration = new Vector2d(
-			-0.001,
-			0.01
+			0,
+			0
 			);
-		this.topSpeed = 10;
+		this.topSpeed = 5;
 	}
 
 	Mover.prototype = {
 		update: function(){
+			dir = Vector2d.prototype.sub(mouse,this.location);
+			dir.normalize();
+			dir.mult(0.5);
+
+			this.acceleration.set(dir);
+
 			this.velocity.add(this.acceleration);
 			this.velocity.limit(this.topSpeed);
 			this.location.add(this.velocity);
@@ -102,6 +110,10 @@ function draw(context,canvas) {
 
 		(function init(){
 			// initialize stuff here
+			 canvas.onmousemove = function(e){
+			 mouse.x = e.clientX;
+			 mouse.y = e.clientY;
+			 };
 			 setup(canvas);
 			 //
 

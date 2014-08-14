@@ -1,7 +1,7 @@
 //
 // The nature of code - Ch.1 Vectors
 //
-// Example 1.8: Motion 101 (velocity and constant acceleration)
+// Example 1.11: Array of movers accelerating towards the mouse
 //
 // Ported by: Gennaro Catapano
 //
@@ -10,39 +10,53 @@
 // Exercise code
 //
 
-var mover;
+var movers = [],
+	mouse = new Vector2d(0,0),
+	dir;
 
 function setup(canvas) {
-	mover = new Mover(canvas);
+	for (var i = 0; i < 20; i++) {
+		movers[i] = new Mover(canvas);
+	};
 }
 
 function draw(context,canvas) {
 	background(context,canvas,"black");
 
-	mover.update();
-	mover.checkEdges(canvas);
-	mover.display(context);
+
+	for (var i = 0; i < movers.length; i++) {
+
+		movers[i].update();
+		movers[i].checkEdges(canvas);
+		movers[i].display(context);		
+	};
 }
 
 // Mover object (Js has no classes)
 	function Mover (canvas){
 		this.location = new Vector2d(
-			canvas.width/2,
-			canvas.height/2
+			Math.random()*canvas.width,
+			Math.random()*canvas.height
 			);
 		this.velocity = new Vector2d(
 			0,
 			0
 			);
 		this.acceleration = new Vector2d(
-			-0.001,
-			0.01
+			0,
+			0
 			);
-		this.topSpeed = 10;
+		this.topSpeed = 5;
 	}
 
 	Mover.prototype = {
 		update: function(){
+			dir = Vector2d.prototype.sub(mouse,this.location);
+			dir.normalize();
+			dir.mult(0.5);
+
+			this.acceleration.set(dir);
+
 			this.velocity.add(this.acceleration);
 			this.velocity.limit(this.topSpeed);
 			this.location.add(this.velocity);
@@ -102,6 +116,11 @@ function draw(context,canvas) {
 
 		(function init(){
 			// initialize stuff here
+			 context.globalAlpha=0.2;
+			 canvas.onmousemove = function(e){
+				 mouse.x = e.clientX;
+				 mouse.y = e.clientY;
+			 };
 			 setup(canvas);
 			 //
 

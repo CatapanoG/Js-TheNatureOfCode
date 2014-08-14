@@ -5,7 +5,7 @@ Please visit the [book website](http://natureofcode.com/book).
 
 ##State:
 
-The introductory chapter has been completed (along with its exercises).
+The introductory and vectors (1st) chapters have been completed.
 
 ##Usage:
 
