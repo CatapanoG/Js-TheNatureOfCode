@@ -1,39 +1,50 @@
 //
-// The nature of code - Ch.1 Vectors
+// The nature of code - Ch.2 Forces
 //
-// Exercise 2.1: Using forces, simulate a helium-filled balloon floating upward and bouncing off the top of a window. 
-// Can you add a wind force that changes over time, perhaps according to Perlin noise?
+// Example 2.3: Gravity scaled by mass
 //
-// Solved by: Gennaro Catapano
+// Ported by: Gennaro Catapano
 //
 
 //
 // Exercise code
 //
 
-var mover,
-	obstacle;
+var movers = [],
+	moversLength = 10,
+	wind,
+	gravity;
 
 function setup(canvas) {
-	mover = new Mover(canvas);
-	obstacle = new Obstacle(canvas.width/2 - 200,canvas.height/2 - 300,400,50);
+	wind = new Vector2d(0.01,0);
+	gravity = new Vector2d(0,0.1);
+
+	for (var i = 0; i < moversLength; i++) {
+		movers[i] = new Mover(canvas,Math.random()*5 + 0.1,0,0);
+	};
 }
 
 function draw(context,canvas) {
 	background(context,canvas,"black");
 
-	mover.update();
-	mover.checkEdges(canvas);
-	mover.display(context);
+	for (var i = 0; i < moversLength; i++) {
+		var m = movers[i].mass;
+		var gravityAdj = Vector2d.prototype.mult(m,gravity); // gravity is scaled by mass
 
-	obstacle.display(context);
+		movers[i].applyForce(wind);
+		movers[i].applyForce(gravityAdj);
+
+		movers[i].update();
+		movers[i].checkEdges(canvas);
+		movers[i].display(context);
+	};
 }
 
 // Mover object (Js has no classes)
-	function Mover (canvas){
+	function Mover (canvas,m,x,y){
 		this.location = new Vector2d(
-			canvas.width/2,
-			canvas.height/2
+			x,
+			y
 			);
 		this.velocity = new Vector2d(
 			0,
@@ -43,70 +54,48 @@ function draw(context,canvas) {
 			0,
 			0
 			);
-		this.topSpeed = 2.5,
-		this.radius = 16;
+		this.topSpeed = 5;
+		this.mass = m;
 	}
 
 	Mover.prototype = {
 		update: function(){
-			this.acceleration.set(new Vector2d(0,-0.05)); // upward movement
-			this.acceleration.add(new Vector2d(Math.random() - 0.5,(Math.random()-0.5)*0.25)); // lateral wind
-
 			this.velocity.add(this.acceleration);
-			this.velocity.limit(this.topSpeed);
-
-			this.checkCollisions();
-
+			//this.velocity.limit(this.topSpeed);
 			this.location.add(this.velocity);
+
+			this.acceleration.mult(0);
 		},
 		display: function(context){
-			ellipse(context,this.location.x,this.location.y,this.radius);
+			ellipse(context,this.location.x,this.location.y,this.mass*16);
 		},
 		checkEdges: function(canvas) {
 			if (this.location.x > canvas.width) {
-				this.location.x = 0;
-			} else if (this.location.x < 0) {
+				//this.location.x = 0;
 				this.location.x = canvas.width;
+				this.velocity.x *= -1;
+			} else if (this.location.x < 0) {
+				//this.location.x = canvas.width;
+				this.velocity.x *= -1;
+				this.location.x = 0;
 			}
 
 			if (this.location.y > canvas.height) {
-				this.location.y = 0;
-			} else if (this.location.y < 0) {
+				//his.location.y = 0;
+				this.velocity.y *= -1;
 				this.location.y = canvas.height;
+			} else if (this.location.y < 0) {
+				//this.location.y = canvas.height;
+				this.velocity.y *= -1;
+				this.location.y = 0;
 			}
 		},
-		checkCollisions: function() {
-			if ((this.location.x < obstacle.x1) && 
-				(this.location.x > obstacle.x0) &&
-				(this.location.y > obstacle.y0) && 
-				(this.location.y < obstacle.y1)) {
-				this.velocity.mult(-1);
-				return "collision!";
-			};
+		applyForce: function(vector2d){
+			var f = Vector2d.prototype.div(this.mass,vector2d);
+			this.acceleration.add(f);
 		}
 	};
 // 
-
-// Obstacle object 
-	function Obstacle (x0,y0,x1,y1) {
-		this.x0 = x0;
-		this.y0 = y0;
-		this.width = x1;
-		this.height = y1;
-		this.x1 = this.x0 + this.width;
-		this.y1 = this.y0 + this.height;
-	};
-
-	Obstacle.prototype = {
-		display: function(context) {
-			context.fillStyle = "white";
-			context.fillRect(this.x0,this.y0,this.width,this.height);
-			context.fillStyle = "grey"
-			context.fillRect(this.x0+4,this.y0+4,this.width-8,this.height-8);
-		}
-	};
-//
-
 
 //
 // main()
@@ -144,6 +133,7 @@ function draw(context,canvas) {
 
 		(function init(){
 			// initialize stuff here
+			 context.globalAlpha = 0.25;
 			 setup(canvas);
 			 //
 
