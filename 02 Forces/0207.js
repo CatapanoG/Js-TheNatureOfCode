@@ -1,7 +1,7 @@
 //
 // The nature of code - Ch.2 Forces
 //
-// Example 2.5: Fluid resistance
+// Example 2.7: Attraction with many movers
 //
 // Ported by: Gennaro Catapano
 //
@@ -11,57 +11,37 @@
 //
 
 var movers = [],
-	moversLength = 20,
-	liquid,
-	wind,
-	gravity;
+	moversLength = 10,
+	a,
+	mouse,
+	dist;
 
 function setup(canvas) {
-	wind = new Vector2d(0.01,0);
-	gravity = new Vector2d(0,0.1);
-
-	liquid = new Liquid(0,canvas.height/2,canvas.width,canvas.height/2,0.1);
+	a = new Attractor(canvas);
+	mouse = new Vector2d(0,0);
 
 	for (var i = 0; i < moversLength; i++) {
-		movers[i] = new Mover(
-			canvas,									// pass the Canvas
-			Math.random()*5 + 0.25,					// random Mass
-			i*((canvas.width-20)/moversLength)+20,	// evenly spaced on x axis
-			0);										// at topmost of Canvas
+		movers[i] = new Mover(canvas,
+								Math.random()*2,
+								Math.random()*canvas.width,
+								Math.random()*canvas.height);
 	};
 }
 
 function draw(context,canvas) {
 	background(context,canvas,"black");
-	liquid.display(context);
 
 	for (var i = 0; i < moversLength; i++) {
-		//liquid	
-		if (movers[i].isInside(liquid)) {
-			movers[i].drag(liquid);
-		};
-
-		//friction
-		var c = 0.01;
-		var friction = Vector2d.prototype.mult(-1,movers[i].velocity);
-		friction.normalize();
-		friction.mult(c);
-		movers[i].applyForce(friction);
-
-		// wind
-		//movers[i].applyForce(wind);
-
-		// gravity
-		var m = movers[i].mass;
-		var gravityAdj = Vector2d.prototype.mult(m,gravity); // gravity is scaled by mass
-		movers[i].applyForce(gravityAdj);
+		var f = a.attract(movers[i]);
+		movers[i].applyForce(f);
 
 		// motion 101
 		movers[i].update();
-		movers[i].checkEdges(canvas);
 		movers[i].display(context);
 	};
-}
+
+	a.display(context);	
+};
 
 // Mover object (Js has no classes)
 	function Mover (canvas,m,x,y){
@@ -70,8 +50,8 @@ function draw(context,canvas) {
 			y
 			);
 		this.velocity = new Vector2d(
-			0,
-			0
+			Math.random() - 0.5,
+			Math.random() - 0.5
 			);
 		this.acceleration = new Vector2d(
 			0,
@@ -86,11 +66,10 @@ function draw(context,canvas) {
 			this.velocity.add(this.acceleration);
 			//this.velocity.limit(this.topSpeed);
 			this.location.add(this.velocity);
-
 			this.acceleration.mult(0);
 		},
 		display: function(context){
-			ellipse(context,this.location.x,this.location.y,this.mass*16);
+			ellipse(context,this.location.x,this.location.y,this.mass*2);
 		},
 		checkEdges: function(canvas) {
 			if (this.location.x > canvas.width) {
@@ -138,24 +117,58 @@ function draw(context,canvas) {
 			this.applyForce(drag);
 		}
 	};
-// 
+//
 
-// Liquid object (Js has no classes)
-	function Liquid (x,y,width,height,c){
-		this.x = x;
-		this.y = y;
-		this.w = width;
-		this.h = height;
-		this.c = c;
+// Attractor object
+
+	function Attractor(canvas) {
+		this.mass = 20;
+		this.location = new Vector2d(canvas.width/2,canvas.height/2);
+		this.G = 0.8;
 	};
 
-	Liquid.prototype = {
+	Attractor.prototype = {
 		display: function(context){
-			context.fillStyle = "MidnightBlue";
-			context.fillRect(this.x,this.y,this.w,this.h);
+			ellipse(context,this.location.x,this.location.y,this.mass*2);
+		},
+		attract: function(mover){
+			var force = Vector2d.prototype.sub(this.location,mover.location);
+			var distance = force.mag();
+
+			if (distance < 5) {distance=5;};
+			if (distance > 400) {return new Vector2d(0,0);
+			} else { 
+				force.normalize();
+				var strength = (this.G * this.mass * mover.mass) / (distance * distance);
+				force.mult(strength);
+
+				return force;
+			};
 		}
 	};
 //
+
+// mouseHandler
+	function mouseHandler(canvas){
+		diff = Vector2d.prototype.sub(a.location,mouse);
+		dist = diff.mag();
+		var isDragging = false;
+
+		if (dist < a.mass * 2) { // distance less than attractor radius
+			isDragging = true;
+			canvas.onmousemove = function(e){
+				if(isDragging){
+					mouse.x = e.clientX;
+					mouse.y = e.clientY;
+					a.location = Vector2d.prototype.add(mouse,diff);
+				}
+			};
+			canvas.onmouseup = function(e){
+				isDragging = false;
+			};
+		};
+	};
+// 
 
 //
 // main()
@@ -165,8 +178,8 @@ function draw(context,canvas) {
 (function main(){
 	// std variables
 	var backgroundColor = "Black",
-		viewportHeight = 900,
-		viewportWidth = 1800,
+		viewportHeight = 800,
+		viewportWidth = 800,
 		viewportId = "viewport",
 		timeStep = 1000 / 30,
 		canvas,
@@ -194,6 +207,13 @@ function draw(context,canvas) {
 		(function init(){
 			// initialize stuff here
 			 context.globalAlpha = 0.25;
+ 			 canvas.onmousedown = function(e){
+				 mouse.x = e.clientX;
+				 mouse.y = e.clientY;
+
+				 mouseHandler(canvas);
+			 };
+
 			 setup(canvas);
 			 //
 

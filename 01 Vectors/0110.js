@@ -111,8 +111,8 @@ function draw(context,canvas) {
 		(function init(){
 			// initialize stuff here
 			 canvas.onmousemove = function(e){
-			 mouse.x = e.clientX;
-			 mouse.y = e.clientY;
+				 mouse.x = e.clientX;
+				 mouse.y = e.clientY;
 			 };
 			 setup(canvas);
 			 //
