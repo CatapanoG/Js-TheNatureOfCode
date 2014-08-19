@@ -5,11 +5,8 @@ Please visit the [book website](http://natureofcode.com/book).
 
 ##State:
 
-The introductory and vectors (1st) chapters have been completed.
+Introduction, Chapter 01 (Vectors) and Chapter 02 (Forces) have been completed.
 
 ##Usage:
 
-In every chapter (or in the exercise folder) there's a minimalistic index.html file. 
-To run an example or exercise: 
-  1. Modify the .html file as to include the .js file you wish to run;
-  2. Open the .html file in the browser.
+There's a folder for every chapter (and for exercises too). Just open the relevant exercise file (the .html one) in you favorite browser.
