@@ -1,13 +1,13 @@
 //
 // The nature of code - Ch.2 Forces
 //
-// Exercise 2.8:
+// Exercise 2.9:
 //
-// In the example above, we have a system (i.e. array) of Mover objects and one Attractor object. 
-// Build an example that has systems of both movers and attractors. 
-// What if you make the attractors invisible? 
-// Can you create a pattern/design from the trails of objects moving around attractors? 
-// See the Metropop Denim project by Clayton Cubitt and Tom Carden for an example.
+// It’s worth noting that gravitational attraction is a model we can follow to develop our own forces. 
+// This chapter isn’t suggesting that you should exclusively create sketches that use gravitational attraction. 
+// Rather, you should be thinking creatively about how to design your own rules to drive the behavior of objects. 
+// For example, what happens if you design a force that is weaker the closer it gets and stronger the farther it gets? 
+// Or what if you design your attractor to attract faraway objects, but repel close ones?
 //
 // Written by: Gennaro Catapano
 //
@@ -17,7 +17,7 @@
 //
 
 var movers = [],
-	moversLength = 1600,
+	moversLength = 1000,
 	attractors = [],
 	attractorsLength = 1,
 	center,
@@ -33,10 +33,10 @@ function setup(canvas) {
 	for (var i = 0; i < attractorsLength; i++) {
 		attractors[i] = new Attractor(canvas,
 								50,
-								canvas.width/2 + 100 - 75*i,
+								canvas.width/2 + 150 - 75*i,
 								canvas.height/2 + 50*i,
-								-0.0 - 1*i,
-								-4);
+								-0 - 1*i,
+								-4.5);
 	};
 
 	for (var i = 0; i < moversLength; i++) {
@@ -49,7 +49,7 @@ function setup(canvas) {
 								0);
 	};
 
-	/*for (var i = moversLength; i < moversLength*2; i++) {
+	for (var i = moversLength; i < moversLength*2; i++) {
 		movers[i] = new Mover(canvas,
 								"black",
 								1,
@@ -57,7 +57,7 @@ function setup(canvas) {
 								canvas.height,
 								0,
 								0);
-	};*/
+	};
 
 	center = new Attractor(canvas, 
 						100, 
@@ -72,7 +72,18 @@ function setup(canvas) {
 function draw(context,canvas) {
 	//center.update();
 	//center.checkEdges(canvas);
-	//center.display(context);
+	center.display(context);
+	context.strokeStyle = "red";
+	context.lineWidth = 1;
+	context.beginPath();
+	context.arc(center.location.x,center.location.y,center.repelRange,0,2*Math.PI);
+	context.stroke();
+
+	context.strokeStyle = "red";
+	context.lineWidth = 1;
+	context.beginPath();
+	context.arc(center.location.x,center.location.y,center.attractRange,0,2*Math.PI);
+	context.stroke();
 
 
 	//background(context,canvas,"black");
@@ -102,9 +113,9 @@ function draw(context,canvas) {
 
 		attractors[i].update();
 		attractors[i].checkEdges(canvas);
-		//attractors[i].display(context);
+		attractors[i].display(context);
 
-		if (attractors[0].location.y > canvas.height/2) {
+		/*if (attractors[0].location.y > canvas.height/2) {
 			if (flip === true) {
 
 			} else {
@@ -119,7 +130,7 @@ function draw(context,canvas) {
 			} else {
 
 			};
-		};
+		};*/
 
 	};
 };
@@ -232,16 +243,22 @@ function draw(context,canvas) {
 			0,
 			0
 			);
-		this.G = 10,
+		this.G = 0.001,
 		this.topSpeed = 10;
+		this.closestForce = 25;
+		this.repelRange = 100;
+		this.noforceRange = 100;
+		this.attractRange = 1000 - this.repelRange;
+		this.repelStep = this.repelRange / Math.PI;
+		this.attractStep = this.attractRange / Math.PI;
 	};
 
 	Attractor.prototype = {
 		display: function(context){
 			//ellipse(context,this.location.x,this.location.y,this.mass*2);
-			var red,
+			/*var red,
 				green,
-				blue;	
+				blue;*/	
 
 			/*blue = Math.round(this.velocity.mag() * this.velocity.mag())*100;
 			if (blue > 255) {blue = 255;};
@@ -250,23 +267,44 @@ function draw(context,canvas) {
 
 			context.fillStyle = colorString;*/
 			context.fillStyle = "blue";
-			context.fillRect(this.location.x,this.location.y,4,4);
+			context.fillRect(this.location.x,this.location.y,6,6);
+		},
+		attract2: function(mover){
+			var force = Vector2d.prototype.sub(this.location,mover.location);
+			var distance = force.mag();
+			var strength;
+
+			if (distance < this.closestForce) {
+				strength = 0;
+			} else if (distance < this.repelRange) {
+				strength = -(this.G * this.mass * mover.mass)*(1/(distance * distance))*(0.75);
+			} else if (distance < this.noforceRange) {
+				strength = 0;	
+			} else if (distance < this.attractRange) {
+				strength =  (this.G * this.mass * mover.mass)*(1/(distance * distance));
+			} else { 
+				strength = 0;
+			};
+
+			force.normalize();
+			force.mult(strength);
+
+			return force;
 		},
 		attract: function(mover){
 			var force = Vector2d.prototype.sub(this.location,mover.location);
 			var distance = force.mag();
+			var strength;
 
-			if (distance < 25) {distance=25;};
-			/*if (distance > 1000) {return new Vector2d(0,0);
+			if (distance < this.repelRange) {
+				strength = Math.sin(Math.PI + distance/this.repelStep)*(this.G * mover.mass*this.mass)*(8);
+			} else if (distance < this.attractRange) {
+				strength = Math.sin(Math.PI*2 + distance/this.attractStep)*(this.G * mover.mass*this.mass)*(1);
 			} else { 
-				force.normalize();
-				var strength = (this.G * this.mass * mover.mass) / (distance * distance);
-				force.mult(strength);
+				strength = 0;
+			};
 
-				return force;
-			};*/
 			force.normalize();
-			var strength = (this.G * this.mass * mover.mass) / (distance * distance);
 			force.mult(strength);
 
 			return force;
@@ -339,8 +377,8 @@ function draw(context,canvas) {
 (function main(){
 	// std variables
 	var backgroundColor = "DimGray",
-		viewportHeight = 1080,
-		viewportWidth = 1920,
+		viewportHeight = 768,
+		viewportWidth = 1366,
 		viewportId = "viewport",
 		timeStep = 1000 / 30,
 		canvas,

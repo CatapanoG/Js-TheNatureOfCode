@@ -1,9 +1,15 @@
 //
 // The nature of code - Ch.2 Forces
 //
-// Example 2.7: Attraction with many movers
+// Exercise 2.9:
 //
-// Ported by: Gennaro Catapano
+// It’s worth noting that gravitational attraction is a model we can follow to develop our own forces. 
+// This chapter isn’t suggesting that you should exclusively create sketches that use gravitational attraction. 
+// Rather, you should be thinking creatively about how to design your own rules to drive the behavior of objects. 
+// For example, what happens if you design a force that is weaker the closer it gets and stronger the farther it gets? 
+// Or what if you design your attractor to attract faraway objects, but repel close ones?
+//
+// Written by: Gennaro Catapano
 //
 
 //
@@ -11,7 +17,7 @@
 //
 
 var movers = [],
-	moversLength = 10,
+	moversLength = 20,
 	a,
 	mouse,
 	dist;
@@ -36,6 +42,7 @@ function draw(context,canvas) {
 		movers[i].applyForce(f);
 
 		// motion 101
+		movers[i].checkEdges(canvas);
 		movers[i].update();
 		movers[i].display(context);
 	};
@@ -76,20 +83,24 @@ function draw(context,canvas) {
 				//this.location.x = 0;
 				this.location.x = canvas.width;
 				this.velocity.x *= -1;
+				this.velocity.mult(0.5);
 			} else if (this.location.x < 0) {
 				//this.location.x = canvas.width;
 				this.velocity.x *= -1;
 				this.location.x = 0;
+				this.velocity.mult(0.5);
 			}
 
 			if (this.location.y > canvas.height) {
 				//his.location.y = 0;
 				this.velocity.y *= -1;
+				this.velocity.mult(0.5);
 				this.location.y = canvas.height;
 			} else if (this.location.y < 0) {
 				//this.location.y = canvas.height;
 				this.velocity.y *= -1;
 				this.location.y = 0;
+				this.velocity.mult(0.5);
 			}
 		},
 		applyForce: function(vector2d){
@@ -124,26 +135,68 @@ function draw(context,canvas) {
 	function Attractor(canvas) {
 		this.mass = 20;
 		this.location = new Vector2d(canvas.width/2,canvas.height/2);
-		this.G = 1.5;
+		this.G = 0.001;
+		this.repelRange = 100;
+		this.attractRange = 1000 - this.repelRange;
+		this.repelStep = this.repelRange / Math.PI;
+		this.attractStep = this.attractRange / Math.PI;
 	};
 
 	Attractor.prototype = {
 		display: function(context){
 			ellipse(context,this.location.x,this.location.y,this.mass*2);
+
+			context.strokeStyle = "red";
+			context.lineWidth = 1;
+			context.beginPath();
+			context.arc(this.location.x,this.location.y,this.repelRange,0,2*Math.PI);
+			context.stroke();
+
+			context.strokeStyle = "red";
+			context.lineWidth = 1;
+			context.beginPath();
+			context.arc(this.location.x,this.location.y,this.attractRange,0,2*Math.PI);
+			context.stroke();
+		},
+		attract2: function(mover){
+			var force = Vector2d.prototype.sub(this.location,mover.location);
+			var distance = force.mag();
+			var strength;
+
+			if (distance < this.closestForce) {
+				strength = 0;
+			} else if (distance < this.repelRange) {
+				strength = -(this.G * this.mass * mover.mass)*(1/(distance * distance))*(1);
+			} else if (distance < this.noforceRange) {
+				strength = 0;	
+			} else if (distance < this.attractRange) {
+				strength =  (this.G * this.mass * mover.mass)*(1/(distance * distance))*(1);
+			} else { 
+				strength = 0;
+			};
+
+			force.normalize();
+			force.mult(strength);
+
+			return force;
 		},
 		attract: function(mover){
 			var force = Vector2d.prototype.sub(this.location,mover.location);
 			var distance = force.mag();
+			var strength;
 
-			if (distance < 5) {distance=5;};
-			if (distance > 400) {return new Vector2d(0,0);
+			if (distance < this.repelRange) {
+				strength = Math.sin(Math.PI + distance/this.repelStep)*(this.G * mover.mass*this.mass)*(8);
+			} else if (distance < this.attractRange) {
+				strength = Math.sin(Math.PI*2 + distance/this.attractStep)*(this.G * mover.mass*this.mass)*(1);
 			} else { 
-				force.normalize();
-				var strength = (this.G * this.mass * mover.mass) / (distance * distance);
-				force.mult(strength);
-
-				return force;
+				strength = 0;
 			};
+
+			force.normalize();
+			force.mult(strength);
+
+			return force;
 		}
 	};
 //
@@ -178,8 +231,8 @@ function draw(context,canvas) {
 (function main(){
 	// std variables
 	var backgroundColor = "Black",
-		viewportHeight = 800,
-		viewportWidth = 800,
+		viewportHeight = 1080,
+		viewportWidth = 1920,
 		viewportId = "viewport",
 		timeStep = 1000 / 30,
 		canvas,
