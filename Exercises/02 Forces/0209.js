@@ -17,7 +17,7 @@
 //
 
 var movers = [],
-	moversLength = 1000,
+	moversLength = 100,
 	attractors = [],
 	attractorsLength = 1,
 	center,
@@ -35,7 +35,7 @@ function setup(canvas) {
 								50,
 								canvas.width/2 + 150 - 75*i,
 								canvas.height/2 + 50*i,
-								-0 - 1*i,
+								-6.5 - 1*i,
 								-4.5);
 	};
 
@@ -49,12 +49,22 @@ function setup(canvas) {
 								0);
 	};
 
-	for (var i = moversLength; i < moversLength*2; i++) {
+	for (var i = movers.length; i < moversLength*2; i++) {
 		movers[i] = new Mover(canvas,
 								"black",
 								1,
-								canvas.width/2 - moversLength/2 + 0 + i - moversLength,
+								canvas.width/2 - moversLength/2 + 0 + (i - moversLength),
 								canvas.height,
+								0,
+								0);
+	};
+
+	for (var i = movers.length; i < moversLength*3; i++) {
+		movers[i] = new Mover(canvas,
+								"black",
+								1,
+								canvas.width,
+								canvas.height/2 - moversLength/2 + 0 + (i - moversLength*2),
 								0,
 								0);
 	};
@@ -97,7 +107,7 @@ function draw(context,canvas) {
 
 		// motion 101
 		movers[i].update();
-		//movers[i].checkEdges(canvas);
+		movers[i].checkEdges(canvas);
 		movers[i].display(context);
 	};
 
@@ -377,8 +387,8 @@ function draw(context,canvas) {
 (function main(){
 	// std variables
 	var backgroundColor = "DimGray",
-		viewportHeight = 768,
-		viewportWidth = 1366,
+		viewportHeight = 1080,
+		viewportWidth = 1920,
 		viewportId = "viewport",
 		timeStep = 1000 / 30,
 		canvas,
