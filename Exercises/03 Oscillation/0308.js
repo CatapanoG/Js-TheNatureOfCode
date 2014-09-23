@@ -1,9 +1,8 @@
 //
 // The nature of code - Ch.3 Oscillation
 //
-// Exercise 3.7
-// Try initializing each Oscillator object with velocities and amplitudes that are not random to create some sort of regular pattern. 
-// Can you make the oscillators appear to be the legs of a insect-like creature?
+// Exercise 3.8
+// Incorporate angular acceleration into the Oscillator object.
 //
 // Written by: Gennaro Catapano
 //
@@ -13,7 +12,7 @@
 //
 
 var oscillators = [],
-	oscillatorsLength = 2000;
+	oscillatorsLength = 3000;
 
 function setup(context,canvas) {
 
@@ -27,23 +26,36 @@ function setup(context,canvas) {
 	for (var i = 0; i < oscillatorsLength; i++) {
 
 		theta = (i+1)*(Math.PI*2*thetaMax/(oscillatorsLength-1));
-		//r = (i*0+1)*(rMax/(oscillatorsLength-1));
-		r = 0.1;
+		//r = 0.05*(i*0+1)*(rMax/(oscillatorsLength-1));
+		r = 0.01 + 0.0001*i;
 
 		x = r*Math.cos(theta)/1;
 		y = r*Math.sin(theta)/1;
 
 		var angle = new Vector2d(x,y);
-			velocity = new Vector2d(0.01,0.02+i/oscillatorsLength*0.01),
+			//velocity = new Vector2d(0.0,0.0),
+			velocity = new Vector2d(-y*0.004/(r/2),x*0.004/r),
 			//velocity = new Vector2d(0.01,0.01+theta/thetaMax*0.01),
+			//acceleration = new Vector2d(-y*0.00001/(r/2),x*0.00001/r),
+			acceleration = new Vector2d(0,0),
 			amplitude = new Vector2d(canvas.height/2,canvas.height/2);
 
-		oscillators.push(new Oscillator(canvas,angle,velocity,amplitude));
+		oscillators.push(new Oscillator(canvas,angle,velocity,acceleration,amplitude));
 	};
 };
 
 function update(canvas){
 	for (var i = 0; i < oscillatorsLength; i++) {
+
+		var acc = new Vector2d(
+			oscillators[i].velocity.y*-1,
+			oscillators[i].velocity.x);
+
+		acc.normalize();
+		acc.mult(oscillators[i].velocity.mag()/30);
+
+		oscillators[i].acceleration = acc;
+
 		oscillators[i].oscillate();
 
 		/*if (oscillators[i].position.x <= -canvas.height/2 + 20 || oscillators[i].position.x >= canvas.height/2 -20 ||
@@ -197,31 +209,38 @@ function draw(context,canvas) {
 
 // Oscillator object
 	
-	function Oscillator(canvas,angle,velocity,amplitude) {
+	function Oscillator(canvas,angle,velocity,acceleration,amplitude) {
 		this.angle = angle;
 		this.velocity = velocity;
+		this.acceleration = acceleration;
 		this.amplitude = amplitude;
 		this.position = new Vector2d(0,0);
+
+		this.topvelocity = 5;
 	}
 
 	Oscillator.prototype = {
 		oscillate: function(){
+			this.velocity.add(this.acceleration);
 			this.angle.add(this.velocity);
-		},
-		display: function(context,canvas){
+
+			this.velocity.limit(this.topvelocity);
+			this.acceleration.mult(0);
+
 			var x = Math.sin(this.angle.x)*this.amplitude.x;
 			var y = Math.sin(this.angle.y)*this.amplitude.y;
 
 			this.position.x = x;
 			this.position.y = y;
-
+		},
+		display: function(context,canvas){
 			context.save();
 			context.translate(canvas.width/2,canvas.height/2);
 			//line(context,0,0,x,y);
-			//ellipse(context,x,y,16);
+			//ellipse(context,this.position.x,this.position.y,16);
 
 			context.fillStyle = "Blue";
-			context.fillRect(x, y, 1, 1);
+			context.fillRect(this.position.x, this.position.y, 4, 4);
 
 			context.restore();
 		}
@@ -350,8 +369,8 @@ function draw(context,canvas) {
 (function main(){
 	// std variables
 	var backgroundColor = "Black",
-		viewportHeight = 1060,
-		viewportWidth = 1900,
+		viewportHeight = 940,
+		viewportWidth = 1850,
 		viewportId = "viewport",
 		timeStep = 1000 / 30,
 		canvas,
