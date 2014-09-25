@@ -14,15 +14,20 @@
 //
 
 var waves = [],
-	wavesLength = 2;
+	wavesLength = 2,
+	particles = [],
+	particlesPerWaveElement = 1,
+	particlesMax = 1000,
+	particlesLifespan = 100,
+	particlesDeathChance = 0.02;
 
 function setup(context,canvas) {
 	for (var i = 0; i < wavesLength; i++) {
 		waves[i] = new Wave(
-			0,
-			0.01,
+			Math.random()*Math.PI*2,
+			Math.random()/4,
 			new Vector2d(Math.random()*canvas.width/2,Math.random()*canvas.height/2),
-			300);
+			Math.random()*40);
 	};
 };
 
@@ -30,13 +35,26 @@ function update(canvas){
 	for (var i = 0; i < wavesLength; i++) {
 		waves[i].update();
 	};
+
+	for (var i = 0; i < particles.length; i++) {
+		particles[i].update();
+		if (particles[i].age >= particlesLifespan) {
+			if (Math.random() >= 1 - particlesDeathChance) {
+				particles.splice(i,1);
+			};
+		};
+	};
 };
 
 function draw(context,canvas) {
 	background(context,canvas,"Black");
 
 	for (var i = 0; i < wavesLength; i++) {
-		waves[i].display(context);
+		waves[i].display(context,canvas);
+	};
+
+	for (var i = 0; i < particles.length; i++) {
+		particles[i].display(context);
 	};
 };
 
@@ -46,26 +64,39 @@ function draw(context,canvas) {
 		this.angVel = angVel;
 		this.position = position;
 		this.length = length;
-		this.circleRadius = 18;
-		this.amplitude = 400;
+		this.circleRadius = 9;
+		this.amplitude = 100;
+
+		this.headPosition = new Vector2d(0,0);
 	}
 
 	Wave.prototype = {
 		update: function(){
 			this.startAngle += this.angVel;
 		},
-		display: function(context){
+		display: function(context,canvas){
 			var angle = this.startAngle;
 
 			context.save();
 			context.translate(this.position.x,this.position.y);
 
-			for (var x = 0; x < 400; x += this.circleRadius) {
-				var y = this.amplitude*Math.sin(this.angle);
+			for (var x = 0; x < this.length*this.circleRadius; x += this.circleRadius) {
+				var y = this.amplitude*Math.sin(angle);
 		
 				ellipse(context,x,y,this.circleRadius,this.circleRadius);
 
-				this.angle += this.angVel;
+				angle += this.angVel;
+
+				for (var i = 0; i < particlesPerWaveElement; i++) {
+					if (particles.length <= particlesMax) {
+						particles.push(new Mover(canvas,
+													1,
+													x + this.position.x,
+													y + this.position.y,
+													-3,
+													Math.random()));
+					} ;
+				};
 			};
 
 			context.restore();
@@ -74,14 +105,14 @@ function draw(context,canvas) {
 //
 
 // Mover object
-	function Mover (canvas,m,x,y){
+	function Mover (canvas,m,x,y,vX,vY){
 		this.location = new Vector2d(
 			x,
 			y
 			);
 		this.velocity = new Vector2d(
-			0,
-			-0.001
+			vX,
+			vY
 			);
 		this.acceleration = new Vector2d(
 			0,
@@ -98,6 +129,8 @@ function draw(context,canvas) {
 		this.angle = 0;
 		this.aVelocity = 0;
 		this.aAcceleration = 0;
+
+		this.age = 0;
 	}
 
 	Mover.prototype = {
@@ -114,26 +147,18 @@ function draw(context,canvas) {
 
 			this.lastAcceleration = new Vector2d(this.acceleration.x,this.acceleration.y);
 			this.acceleration.mult(0);
+
+			this.age += 1;
 		},
 		display: function(context){
-			context.save();
+			//context.save();
 
-			context.translate(this.location.x,this.location.y);
+			//context.translate(this.location.x,this.location.y);
 			//context.rotate(this.angle*Math.PI/180);
-			context.rotate(this.angle);
+			
+			rectangle(context,this.location.x,this.location.y,1,1);
 
-			//rectangle(context, -this.mass, -this.mass/2, this.mass*2, this.mass);
-			//ellipse(context,this.location.x,this.location.y,this.mass*2);		
-
-			var a = new Vector2d(-20,-10);
-				b = new Vector2d( 20,-10);
-				c = new Vector2d(  0, 50);
-
-			triangle(context,a,b,c);
-			//rectangle(context, -15.0, -20, 8.0, 10);
-			//rectangle(context,  08.0, -20, 8.0, 10);
-
-			context.restore();
+			//context.restore();
 		},
 		checkEdges: function(canvas) {
 			if (this.location.x > canvas.width) {
