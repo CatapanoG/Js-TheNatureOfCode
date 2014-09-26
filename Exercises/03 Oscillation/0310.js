@@ -16,17 +16,21 @@
 var waves = [],
 	wavesLength = 2,
 	particles = [],
+	particlesPerWave,
 	particlesPerWaveElement = 1,
-	particlesMax = 1000,
+	particlesMax = 500*wavesLength,
 	particlesLifespan = 100,
 	particlesDeathChance = 0.02;
 
 function setup(context,canvas) {
+
+	particlesPerWave = particlesMax / wavesLength;
+
 	for (var i = 0; i < wavesLength; i++) {
 		waves[i] = new Wave(
 			Math.random()*Math.PI*2,
-			Math.random()/4,
-			new Vector2d(Math.random()*canvas.width/2,Math.random()*canvas.height/2),
+			Math.random()/8,
+			new Vector2d(Math.random()*canvas.width,Math.random()*canvas.height),
 			Math.random()*40);
 	};
 };
@@ -68,11 +72,13 @@ function draw(context,canvas) {
 		this.amplitude = 100;
 
 		this.headPosition = new Vector2d(0,0);
+		this.ownPartclesPerCycle = 0;
 	}
 
 	Wave.prototype = {
 		update: function(){
 			this.startAngle += this.angVel;
+			this.ownPartclesPerCycle = 0;
 		},
 		display: function(context,canvas){
 			var angle = this.startAngle;
@@ -83,19 +89,20 @@ function draw(context,canvas) {
 			for (var x = 0; x < this.length*this.circleRadius; x += this.circleRadius) {
 				var y = this.amplitude*Math.sin(angle);
 		
-				ellipse(context,x,y,this.circleRadius,this.circleRadius);
+				//ellipse(context,x,y,this.circleRadius,this.circleRadius);
 
 				angle += this.angVel;
 
 				for (var i = 0; i < particlesPerWaveElement; i++) {
-					if (particles.length <= particlesMax) {
+					if (particles.length <= particlesMax && this.ownPartclesPerCycle <= particlesPerWave) {
 						particles.push(new Mover(canvas,
-													1,
+													Math.random()*50,
 													x + this.position.x,
 													y + this.position.y,
 													-3,
-													Math.random()));
+													Math.random()-0.5));
 					} ;
+					this.ownPartclesPerCycle++;
 				};
 			};
 
@@ -129,8 +136,12 @@ function draw(context,canvas) {
 		this.angle = 0;
 		this.aVelocity = 0;
 		this.aAcceleration = 0;
+		this.topAngularSpeed = 5;
 
 		this.age = 0;
+
+		this.colorRed = 256;
+		this.colorBlue = 0;
 	}
 
 	Mover.prototype = {
@@ -139,9 +150,10 @@ function draw(context,canvas) {
 			this.velocity.limit(this.topSpeed);
 			this.location.add(this.velocity);
 
-			//this.aAcceleration = this.acceleration.x * 10;
-			//this.aVelocity += this.aAcceleration;
-			//this.angle += this.aVelocity;
+			this.aAcceleration = this.velocity.y;
+			this.aVelocity += this.aAcceleration;
+			if (this.aVelocity >= this.topAngularSpeed) {this.aVelocity = this.topAngularSpeed;};
+			this.angle += this.aVelocity;
 
 			//this.angle = Math.atan2(this.velocity.y, this.velocity.x) - Math.PI/2;
 
@@ -149,16 +161,26 @@ function draw(context,canvas) {
 			this.acceleration.mult(0);
 
 			this.age += 1;
+			// color change
+			if (this.mass > 1 && Math.random() > 0.85) {this.mass -= 1;};
+			if (Math.random() >= 0.5) {
+				if (this.colorRed > 0 && this.colorBlue <= 256) {
+					this.colorBlue += 4;
+					this.colorRed  -= 4;
+				};
+			};
+
 		},
 		display: function(context){
-			//context.save();
+			context.save();
 
-			//context.translate(this.location.x,this.location.y);
-			//context.rotate(this.angle*Math.PI/180);
+			context.translate(this.location.x + this.mass/2,this.location.y + this.mass/2);
+			context.rotate(this.angle*Math.PI/180);
 			
-			rectangle(context,this.location.x,this.location.y,1,1);
+			context.fillStyle = "rgb(" + this.colorRed + " , 0, " + this.colorBlue + ")";
+			context.fillRect(-this.mass/2, -this.mass/2, this.mass, this.mass);
 
-			//context.restore();
+			context.restore();
 		},
 		checkEdges: function(canvas) {
 			if (this.location.x > canvas.width) {
@@ -374,8 +396,8 @@ function draw(context,canvas) {
 (function main(){
 	// std variables
 	var backgroundColor = "Black",
-		viewportHeight = 800,
-		viewportWidth = 800,
+		viewportHeight = 900,
+		viewportWidth = 1800,
 		viewportId = "viewport",
 		timeStep = 1000 / 30,
 		canvas,
@@ -402,7 +424,7 @@ function draw(context,canvas) {
 
 		(function init(){
 			// initialize stuff here
-			 context.globalAlpha = 0.75;
+			 context.globalAlpha = 0.2;
 			 //mouseHandler(canvas);
 			 //keyHandler(canvas);
 			 setup(context,canvas);
