@@ -1,10 +1,11 @@
 //
 // The nature of code - Ch.3 Oscillation
 //
-// Exercise 3.10
-// Encapsulate the above examples into a Wave class and create a sketch that displays two waves 
-// (with different amplitudes/periods) as in the screenshot below. 
-// Move beyond plain circles and lines and try visualizing the wave in a more creative way.
+// Exercise 3.12
+// String together a series of pendulums so that the endpoint of one is the origin point of another. 
+// Note that doing this may produce intriguing results but will be wildly inaccurate physically. 
+// Simulating an actual double pendulum involves sophisticated equations, 
+// which you can read about here: http://scienceworld.wolfram.com/physics/DoublePendulum.html.
 //
 // Written by: Gennaro Catapano
 //
@@ -13,39 +14,22 @@
 // Exercise code
 //
 
-var waves = [],
-	wavesLength = 1,
-	particles = [],
-	particlesPerWave,
-	particlesPerWaveElement = 2,
-	particlesMax = 500*wavesLength,
-	particlesLifespan = 200,
-	particlesDeathChance = 0.02;
+var p = [],
+	ipLength = 80;
 
 function setup(context,canvas) {
-
-	particlesPerWave = particlesMax / wavesLength;
-
-	for (var i = 0; i < wavesLength; i++) {
-		waves[i] = new Wave(
-			Math.random()*Math.PI*2,
-			0.025,
-			new Vector2d(canvas.width - 50,canvas.height/2),
-			1);
+	p[0] = new Pendulum(canvas, new Vector2d(canvas.width/2,0), Math.PI/2);
+	
+	for (var i = 1; i < ipLength; i++) {
+		p[i] = new Pendulum(canvas, new Vector2d(0,0), Math.PI/2 - 0.04*i);
 	};
 };
 
 function update(canvas){
-	for (var i = 0; i < wavesLength; i++) {
-		waves[i].update();
-	};
-
-	for (var i = 0; i < particles.length; i++) {
-		particles[i].update();
-		if (particles[i].age >= particlesLifespan) {
-			if (Math.random() >= 1 - particlesDeathChance) {
-				particles.splice(i,1);
-			};
+	for (var i = 0; i < p.length; i++) {
+		p[i].update();
+		if (i + 1 < p.length) {
+			p[i+1].origin = p[i].location;
 		};
 	};
 };
@@ -53,14 +37,42 @@ function update(canvas){
 function draw(context,canvas) {
 	background(context,canvas,"Black");
 
-	for (var i = 0; i < wavesLength; i++) {
-		waves[i].display(context,canvas);
-	};
-
-	for (var i = 0; i < particles.length; i++) {
-		particles[i].display(context);
+	for (var i = 0; i < p.length; i++) {
+		p[i].display(context);
 	};
 };
+
+// Pendulum object
+	function Pendulum(canvas,v2Origin,iAngle){
+		this.r = 10;
+		this.angle = iAngle;
+		this.aVelocity = 0;
+		this.aAcceleration = 0;
+
+		this.origin = v2Origin;
+		this.location;
+	};
+
+	Pendulum.prototype = {
+		update: function(){
+			var gravity = 0.4;
+			this.aAcceleration = (-1 * gravity / this.r) * Math.sin(this.angle);
+
+			this.aVelocity += this.aAcceleration;
+			this.aVelocity *= 0.995;
+			this.angle += this.aVelocity;
+
+			this.location = new Vector2d(this.r*Math.sin(this.angle),
+											this.r*Math.cos(this.angle));
+
+			this.location.add(this.origin);
+		},
+		display: function(context){
+			line(context,this.origin.x,this.origin.y,this.location.x,this.location.y);
+			ellipse(context,this.location.x,this.location.y,4);
+		}
+	};
+//
 
 // Wave object
 	function Wave(startAngle,angVel,position,length){
@@ -68,17 +80,18 @@ function draw(context,canvas) {
 		this.angVel = angVel;
 		this.position = position;
 		this.length = length;
-		this.circleRadius = 9;
-		this.amplitude = 100;
+		this.circleRadius = 40;
+		this.amplitude = 200;
 
 		this.headPosition = new Vector2d(0,0);
-		this.ownPartclesPerCycle = 0;
+
+		this.globalSpeedMultiplier = 0.1;
+		this.displayStep = 1/3;
 	}
 
 	Wave.prototype = {
 		update: function(){
-			this.startAngle += this.angVel;
-			this.ownPartclesPerCycle = 0;
+			this.startAngle += this.angVel*this.globalSpeedMultiplier;
 		},
 		display: function(context,canvas){
 			var angle = this.startAngle;
@@ -86,24 +99,13 @@ function draw(context,canvas) {
 			context.save();
 			context.translate(this.position.x,this.position.y);
 
-			for (var x = 0; x < this.length*this.circleRadius; x += this.circleRadius) {
-				var y = this.amplitude*Math.sin(angle);
+			for (var x = 0; x < this.length*this.circleRadius; x += this.circleRadius * this.displayStep) {
+				var y = this.amplitude*Math.sin(angle * this.displayStep);
+				y += this.amplitude*Math.sin(angle*1.2 * this.displayStep); 
 		
-				//ellipse(context,x,y,this.circleRadius,this.circleRadius);
+				ellipse(context,x,y,this.circleRadius,this.circleRadius);
 
 				angle += this.angVel;
-
-				for (var i = 0; i < particlesPerWaveElement; i++) {
-					if (particles.length <= particlesMax && this.ownPartclesPerCycle <= particlesPerWave) {
-						particles.push(new Mover(canvas,
-													Math.random()*50,
-													x + this.position.x,
-													y + this.position.y,
-													-3,
-													Math.random()-0.5));
-					} ;
-					this.ownPartclesPerCycle++;
-				};
 			};
 
 			context.restore();
@@ -428,7 +430,7 @@ function draw(context,canvas) {
 
 		(function init(){
 			// initialize stuff here
-			 context.globalAlpha = 0.2;
+			 //context.globalAlpha = 0.6;
 			 //mouseHandler(canvas);
 			 //keyHandler(canvas);
 			 setup(context,canvas);

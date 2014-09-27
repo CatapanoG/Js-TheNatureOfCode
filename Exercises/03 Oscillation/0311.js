@@ -1,10 +1,9 @@
 //
 // The nature of code - Ch.3 Oscillation
 //
-// Exercise 3.10
-// Encapsulate the above examples into a Wave class and create a sketch that displays two waves 
-// (with different amplitudes/periods) as in the screenshot below. 
-// Move beyond plain circles and lines and try visualizing the wave in a more creative way.
+// Exercise 3.11
+// More complex waves can be produced by the values of multiple waves together. 
+// Create a sketch that implements this.
 //
 // Written by: Gennaro Catapano
 //
@@ -13,53 +12,20 @@
 // Exercise code
 //
 
-var waves = [],
-	wavesLength = 1,
-	particles = [],
-	particlesPerWave,
-	particlesPerWaveElement = 2,
-	particlesMax = 500*wavesLength,
-	particlesLifespan = 200,
-	particlesDeathChance = 0.02;
+var wave;
 
 function setup(context,canvas) {
-
-	particlesPerWave = particlesMax / wavesLength;
-
-	for (var i = 0; i < wavesLength; i++) {
-		waves[i] = new Wave(
-			Math.random()*Math.PI*2,
-			0.025,
-			new Vector2d(canvas.width - 50,canvas.height/2),
-			1);
-	};
+	wave = new Wave(0,0.4,new Vector2d(200, canvas.height/2),35);
 };
 
 function update(canvas){
-	for (var i = 0; i < wavesLength; i++) {
-		waves[i].update();
-	};
-
-	for (var i = 0; i < particles.length; i++) {
-		particles[i].update();
-		if (particles[i].age >= particlesLifespan) {
-			if (Math.random() >= 1 - particlesDeathChance) {
-				particles.splice(i,1);
-			};
-		};
-	};
+	wave.update();
 };
 
 function draw(context,canvas) {
 	background(context,canvas,"Black");
 
-	for (var i = 0; i < wavesLength; i++) {
-		waves[i].display(context,canvas);
-	};
-
-	for (var i = 0; i < particles.length; i++) {
-		particles[i].display(context);
-	};
+	wave.display(context,canvas);
 };
 
 // Wave object
@@ -68,17 +34,18 @@ function draw(context,canvas) {
 		this.angVel = angVel;
 		this.position = position;
 		this.length = length;
-		this.circleRadius = 9;
-		this.amplitude = 100;
+		this.circleRadius = 40;
+		this.amplitude = 200;
 
 		this.headPosition = new Vector2d(0,0);
-		this.ownPartclesPerCycle = 0;
+
+		this.globalSpeedMultiplier = 0.1;
+		this.displayStep = 1/3;
 	}
 
 	Wave.prototype = {
 		update: function(){
-			this.startAngle += this.angVel;
-			this.ownPartclesPerCycle = 0;
+			this.startAngle += this.angVel*this.globalSpeedMultiplier;
 		},
 		display: function(context,canvas){
 			var angle = this.startAngle;
@@ -86,24 +53,13 @@ function draw(context,canvas) {
 			context.save();
 			context.translate(this.position.x,this.position.y);
 
-			for (var x = 0; x < this.length*this.circleRadius; x += this.circleRadius) {
-				var y = this.amplitude*Math.sin(angle);
+			for (var x = 0; x < this.length*this.circleRadius; x += this.circleRadius * this.displayStep) {
+				var y = this.amplitude*Math.sin(angle * this.displayStep);
+				y += this.amplitude*Math.sin(angle*1.2 * this.displayStep); 
 		
-				//ellipse(context,x,y,this.circleRadius,this.circleRadius);
+				ellipse(context,x,y,this.circleRadius,this.circleRadius);
 
 				angle += this.angVel;
-
-				for (var i = 0; i < particlesPerWaveElement; i++) {
-					if (particles.length <= particlesMax && this.ownPartclesPerCycle <= particlesPerWave) {
-						particles.push(new Mover(canvas,
-													Math.random()*50,
-													x + this.position.x,
-													y + this.position.y,
-													-3,
-													Math.random()-0.5));
-					} ;
-					this.ownPartclesPerCycle++;
-				};
 			};
 
 			context.restore();
@@ -428,7 +384,7 @@ function draw(context,canvas) {
 
 		(function init(){
 			// initialize stuff here
-			 context.globalAlpha = 0.2;
+			 context.globalAlpha = 0.6;
 			 //mouseHandler(canvas);
 			 //keyHandler(canvas);
 			 setup(context,canvas);
