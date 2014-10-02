@@ -1,5 +1,5 @@
 //
-// The nature of code - Ch.3 Oscillation
+// The nature of code - Ch.4 Particle Systems
 //
 // Exercise 4.4
 // Building off Chapter 3’s “Asteroids” example, 
@@ -15,6 +15,7 @@
 
 var mover,
 	mouseMoverDist,
+	checkKeys,
 	gravity = new Vector2d(0,+0.01),
 	attritionCoeff = 0.1,
 	ps;
@@ -27,6 +28,8 @@ function setup(canvas) {
 
 function update(canvas){
 	//mover.applyForce(gravity);
+	checkKeys();
+
 	attrition = new Vector2d(mover.velocity.x,mover.velocity.y);
 	attrition.mult(-attritionCoeff);
 	mover.applyForce(attrition);
@@ -56,8 +59,10 @@ function draw(context,canvas) {
 
 		this.iTopSpeed = 10;
 
-		this.iParticlesPerCycle = 8;
+		this.iParticlesPerCycle = 16;
 		this.v2NewParticlesAcc;
+		this.v2NewParticlePosition1;
+		this.v2NewParticlePosition2;
 	};
 
 	ParticleSystem.prototype = {
@@ -72,17 +77,17 @@ function draw(context,canvas) {
 			//this.v2Velocity.add(this.v2Acceleration);
 			//this.v2Velocity.limit(this.iTopSpeed);
 			//this.v2Origin.add(this.v2Velocity);
-			this.v2Origin = new Vector2d(v2MoverLocation.x + 35*Math.cos(iAngle -Math.PI/2),v2MoverLocation.y + 35*Math.sin(iAngle -Math.PI/2));
+			this.v2NewParticlePosition1 = new Vector2d(v2MoverLocation.x + 28*Math.cos(iAngle -Math.PI/2 +Math.PI/8),
+														v2MoverLocation.y + 28*Math.sin(iAngle -Math.PI/2 +Math.PI/8));
+			this.v2NewParticlePosition2 = new Vector2d(v2MoverLocation.x + 28*Math.cos(iAngle -Math.PI/2 -Math.PI/8),
+														v2MoverLocation.y + 28*Math.sin(iAngle -Math.PI/2 -Math.PI/8));
 			this.v2NewParticlesAcc = new Vector2d(v2MoverAcceleration.x,v2MoverAcceleration.y);
 			this.v2NewParticlesAcc.mult(-1*0.1);
 
 			if (this.v2NewParticlesAcc.mag() > 0.01) {
-				for (var i = 0; i < this.iParticlesPerCycle; i++){
-					var v2OrtVector = new Vector2d(this.v2Origin.y,this.v2Origin.x*-1);
-					v2OrtVector.mult(0.1);
-					var v2ParticleLocation = Vector2d.prototype.add(this.v2Origin,v2OrtVector);
-
-					this.addParticle(v2ParticleLocation);
+				for (var i = 0; i < this.iParticlesPerCycle/2; i++){
+					this.addParticle(this.v2NewParticlePosition1);
+					this.addParticle(this.v2NewParticlePosition2);
 				};
 			};
 
@@ -342,7 +347,7 @@ function draw(context,canvas) {
 // 
 
 // keyboardHandler
-	function keyHandler(canvas){
+	function keyHandler2(canvas){
 		document.addEventListener('keydown', function(event) {
 		    if (event.keyCode == 33) {
 		        //alert('Page up');
@@ -427,8 +432,8 @@ function draw(context,canvas) {
 (function main(){
 	// std variables
 	var backgroundColor = "Black",
-		viewportHeight = 800,
-		viewportWidth = 800,
+		viewportHeight = 1080,
+		viewportWidth = 1900,
 		viewportId = "viewport",
 		timeStep = 1000 / 30,
 		canvas,
@@ -457,11 +462,10 @@ function draw(context,canvas) {
 			// initialize stuff here
 			 //context.globalAlpha = 0.25;
 			 //mouseHandler(canvas);
-			 keyHandler(canvas);
+			 checkKeys = keyHandler(canvas);
+			 //keyHandler2(canvas);
 			 setup(canvas);
 			 //
-
-
 		}());
 		function updateWorld(){
 			// update logic here
