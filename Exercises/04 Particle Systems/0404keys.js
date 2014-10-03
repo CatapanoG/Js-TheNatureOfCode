@@ -1,4 +1,5 @@
-function keyHandler(){
+// uses a closure 
+function keyHandler(){ 
 	var key = [];
 	var definedKeys = [];
 	definedKeys[37] = true;
@@ -7,26 +8,27 @@ function keyHandler(){
 	definedKeys[40] = true;
 
 	// keys defs
-	var key38 = function(){
-        //alert('up');
-        var acc = new Vector2d(Math.cos(mover.angle + Math.PI/2),Math.sin(mover.angle + Math.PI/2));
-        acc.mult(5);
-        mover.applyForce(acc);
-    };
-    var key37 = function(){
-        //alert('left');
-        mover.angle -= 0.05;
-    };
-    var key39 = function(){
-    	//alert('right')
-        mover.angle += 0.05;
-    };
-    var key40 = function(){
-        //alert('down');
-        var acc = Vector2d.prototype.mult(1,mover.velocity);
-        acc.mult(-mover.mass/10);
-        mover.applyForce(acc);
-    }
+		var key38 = function(){
+	        //alert('up');
+	        var acc = new Vector2d(Math.cos(mover.angle + Math.PI/2),Math.sin(mover.angle + Math.PI/2));
+	        acc.mult(5);
+	        mover.applyForce(acc);
+	    };
+	    var key37 = function(){
+	        //alert('left');
+	        mover.angle -= 0.05;
+	    };
+	    var key39 = function(){
+	    	//alert('right')
+	        mover.angle += 0.05;
+	    };
+	    var key40 = function(){
+	        //alert('down');
+	        var acc = Vector2d.prototype.mult(1,mover.velocity);
+	        acc.mult(-mover.mass/10);
+	        mover.applyForce(acc);
+	    }
+	//
 
     // listeners
 	document.addEventListener('keydown', function(e){

@@ -59,7 +59,7 @@ function draw(context,canvas) {
 
 		this.iTopSpeed = 10;
 
-		this.iParticlesPerCycle = 16;
+		this.iParticlesPerCycle = 10;
 		this.v2NewParticlesAcc;
 		this.v2NewParticlePosition1;
 		this.v2NewParticlePosition2;
