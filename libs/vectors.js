@@ -3,7 +3,7 @@
 //
 // A lightweight library created to support "the Nature of Code" exercises.
 // Author: Gennaro Catapano
-// This version: 14.Aug.2014
+// This version: 08 10 14
 //
 
 // 2D
@@ -80,6 +80,9 @@ Vector2d.prototype = {
 		this.x = Math.random() - 0.5;
 		this.y = Math.random() - 0.5;
 		this.normalize();
+	},
+	get: function(){
+		return new Vector2d(this.x,this.y);
 	}
 };
 
