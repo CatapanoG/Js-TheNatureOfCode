@@ -6,10 +6,13 @@ function Particle(v2Location) {
 
 	this.lifespan = 1.5;
 	this.mass = 1.0;
+	this.origin = new Vector2d(this.location.x,this.location.y);
 };
 
 Particle.prototype = {
 	update: function(){
+		this.convergeX();
+
 		this.velocity.add(this.acceleration);
 		this.location.add(this.velocity);
 
@@ -18,12 +21,12 @@ Particle.prototype = {
 	},
 	display: function(context){
 		context.save();
-		context.globalAlpha = this.lifespan/1.5;
+		context.globalAlpha = (this.lifespan/1.5)/10;
 		context.globalCompositeOperation = "lighter";
 		//ellipse(context,this.location.x,this.location.y,8);
 		//context.fillStyle = "White";
 		//context.fillRect(this.location.x, this.location.y, 3, 3);
-		var fPartSize = (1/this.lifespan)*10; 
+		var fPartSize = (this.lifespan)*20 + 4; 
 		context.translate(this.location.x - fPartSize/2,this.location.y - fPartSize/2);
 		context.drawImage(oParticleImage, 0, 0, fPartSize, fPartSize);
 		context.globalAlpha = 1;
@@ -40,5 +43,16 @@ Particle.prototype = {
 		var f = v2Force.get();
 		f.div(this.mass);
 		this.acceleration.add(f);
+	},
+	// custom methods
+	checkEdges: function(){
+		if (this.location.y >= 800) {
+			this.location.y = 800;
+			this.velocity.y *= -0.8;
+		};
+	},
+	convergeX: function(){
+		var f = new Vector2d((this.origin.x - this.location.x)*0.001,0);
+		this.applyForce(f);
 	}
 };
