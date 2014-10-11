@@ -60,7 +60,7 @@ Particle.prototype = {
 		};
 	},
 	convergeX: function(){
-		var f = new Vector2d((this.origin.x - this.location.x)*0.001,0);
+		var f = new Vector2d((this.origin.x - this.location.x)*0.0001,0);
 		this.applyForce(f);
 	}
 };

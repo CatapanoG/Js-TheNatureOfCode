@@ -43,10 +43,10 @@ function setup(context,canvas) {
 
 	//create ground
 	bodyDef.type = Body.b2_staticBody;
-	bodyDef.position.x = 250;
-	bodyDef.position.y = canvas.height - 20;
+	bodyDef.position.x = 300;
+	bodyDef.position.y = canvas.height - 40;
 	fixDef.shape = new PolygonShape;
-	fixDef.shape.SetAsBox(200, 20);
+	fixDef.shape.SetAsBox(300, 20);
 	world.CreateBody(bodyDef).CreateFixture(fixDef);
 
 	//create an object
