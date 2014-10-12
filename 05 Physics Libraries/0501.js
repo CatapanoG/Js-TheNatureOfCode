@@ -6,65 +6,55 @@
 // Using a port of Box2d physics library (C++) by Erin Catto,
 // please visit: http://box2d.org
 // Javascript Box2d port: box2dweb 2.1.a.3,
-// website: https://code.google.com/p/box2dweb/ 
+// website: https://code.google.com/p/box2dweb/
 //
 // Example ported-written by: Gennaro Catapano
 // www.gennarocatapano.it
 //
 
 // Box2dWeb definitions
-var Vec2 = Box2D.Common.Math.b2Vec2,
-	BodyDef = Box2D.Dynamics.b2BodyDef,
-	Body = Box2D.Dynamics.b2Body,
-	FixtureDef = Box2D.Dynamics.b2FixtureDef,
-	Fixture = Box2D.Dynamics.b2Fixture,
-	World = Box2D.Dynamics.b2World,
-	MassData = Box2D.Collision.Shapes.b2MassData,
-	PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
-	CircleShape = Box2D.Collision.Shapes.b2CircleShape,
-	DebugDraw = Box2D.Dynamics.b2DebugDraw;
+var b2Vec2 = Box2D.Common.Math.b2Vec2,
+	b2BodyDef = Box2D.Dynamics.b2BodyDef,
+	b2Body = Box2D.Dynamics.b2Body,
+	b2FixtureDef = Box2D.Dynamics.b2FixtureDef,
+	b2Fixture = Box2D.Dynamics.b2Fixture,
+	b2World = Box2D.Dynamics.b2World,
+	b2MassData = Box2D.Collision.Shapes.b2MassData,
+	b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
+	b2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
+	b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 // Other globals
 var world,
 	gravity,
 	fixDef,
 	bodyDef,
-	debugDraw;
+	debugDraw,
+	worldScale = 10;
 
 function setup(context,canvas) {
-	gravity = new Vec2(0,10);
-	world = new World(gravity,true);
+	world = new b2World(new b2Vec2(0, 10),true);
 
-	fixDef = new FixtureDef;
+	//setup debug draw
+	debugDraw = new b2DebugDraw();
+	debugDraw.SetSprite(context);
+	debugDraw.SetDrawScale(worldScale);
+	debugDraw.SetFillAlpha(0.3);
+	debugDraw.SetLineThickness(1.0);
+	debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+	world.SetDebugDraw(debugDraw);
+
+	fixDef = new b2FixtureDef;
 	fixDef.density = 1.0;
 	fixDef.friction = 0.5;
 	fixDef.restitution = 0.7;
 
-	bodyDef = new BodyDef;
+	bodyDef = new b2BodyDef;
 
 	//create ground
-	bodyDef.type = Body.b2_staticBody;
-	bodyDef.position.x = 300;
-	bodyDef.position.y = canvas.height - 40;
-	fixDef.shape = new PolygonShape;
-	fixDef.shape.SetAsBox(300, 20);
-	world.CreateBody(bodyDef).CreateFixture(fixDef);
+    createBox(600,30,400,780,b2Body.b2_staticBody);
 
 	//create an object
-	bodyDef.type = Body.b2_dynamicBody;
-	fixDef.shape = new PolygonShape;
-	fixDef.shape.SetAsBox(Math.random()+0.1,Math.random()+0.1);
-	bodyDef.position.x = Math.random()*10;
-	bodyDef.position.y = Math.random()*10;
-	world.CreateBody(bodyDef).CreateFixture(fixDef);	
-
-	//setup debug draw
-	debugDraw = new DebugDraw();
-	debugDraw.SetSprite(context);
-	debugDraw.SetDrawScale(1.0);
-	debugDraw.SetFillAlpha(0.3);
-	debugDraw.SetLineThickness(2.0);
-	debugDraw.SetFlags(DebugDraw.e_shapeBit | DebugDraw.e_jointBit);
-	world.SetDebugDraw(debugDraw);	
+	createBox(100,100,400,100,b2Body.b2_dynamicBody);
 };
 
 function update(canvas){
@@ -78,10 +68,27 @@ function update(canvas){
 function draw(context,canvas) {
 	//background(context,canvas,"Black");
 
+
 	world.DrawDebugData();
 	world.ClearForces();
+
+	outlineCanvas(context,canvas);
 };
 
+function createBox(width,height,pX,pY,type){
+    var bodyDef = new b2BodyDef;
+    bodyDef.type = type;
+    bodyDef.position.Set(pX/worldScale,pY/worldScale);
+    var polygonShape = new b2PolygonShape;
+    polygonShape.SetAsBox(width/2/worldScale,height/2/worldScale);
+    var fixtureDef = new b2FixtureDef;
+    fixtureDef.density = 1.0;
+    fixtureDef.friction = 0.5;
+    fixtureDef.restitution = 0.5;
+    fixtureDef.shape = polygonShape;
+    var body=world.CreateBody(bodyDef);
+    body.CreateFixture(fixtureDef);
+}
 
 
 // mouseHandler
@@ -91,7 +98,7 @@ function draw(context,canvas) {
 			//mouse.y = e.clientY;
 		};
 	};
-// 
+//
 
 //
 // main()
@@ -100,7 +107,7 @@ function draw(context,canvas) {
 
 (function main(){
 	// std variables
-	var backgroundColor = "White",
+	var backgroundColor = "Black",
 		viewportHeight = 800,
 		viewportWidth = 800,
 		viewportId = "viewport",
@@ -202,4 +209,18 @@ function draw(context,canvas) {
 	    context.fill();
 	    context.stroke();
 	}
+
+	function outlineCanvas(context,canvas){
+		context.strokeStyle = "Black";
+		context.lineWidth = 1;
+		context.beginPath(); // resets the previous path
+		context.moveTo(0,0); // no translation f() so had to be done manually
+		context.lineTo(canvas.width,0); // no translation f() so had to be done manually
+		context.lineTo(canvas.width,canvas.height);
+		context.lineTo(0,canvas.height);
+		context.lineTo(0,0);
+		context.stroke();
+	}
+
+
 //

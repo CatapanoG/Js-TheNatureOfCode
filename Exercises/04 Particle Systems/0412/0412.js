@@ -11,7 +11,7 @@
 //
 
 var oPartSys,
-	oRepeller, 
+	oRepeller,
 	v2Gravity = new Vector2d(0,-0.01),
 	v2Wind = new Vector2d(0,0),
 	oParticleImage = [];
@@ -47,7 +47,7 @@ function draw(context,canvas) {
 			//mouse.y = e.clientY;
 		};
 	};
-// 
+//
 
 //
 // main()
@@ -88,7 +88,7 @@ function draw(context,canvas) {
 			 //keyHandler(canvas);
 			 setup(context,canvas);
 
- 			 oParticleImage.push(new Image());  
+ 			 oParticleImage.push(new Image());
 			 oParticleImage[0].src = 'yellowParticle.png';
 			 oParticleImage[0].onload = function()
 			 {
@@ -101,7 +101,7 @@ function draw(context,canvas) {
 				 		requestAnimationFrame(updateWorld);
 			 		};
 			 	};
-			 }; 
+			 };
 			 //
 		}());
 		function updateWorld(){

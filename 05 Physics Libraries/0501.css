@@ -1,10 +1,10 @@
 body {
 	overflow: hidden;
-	padding	: 0px;
-	margin: 0px;
+	padding	: 5px;
+	margin: 5px;
 }
 
 canvas {
-	display: block;
+	/*display: block;*/
 	/*transform: scale(1,1);*/
 }

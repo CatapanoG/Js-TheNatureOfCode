@@ -10,7 +10,7 @@
 // Using Irwin-Hall approx to std Normal:
 // http://en.wikipedia.org/wiki/Normal_distribution#Generating_values_from_normal_distribution
 
-//Walker constructor 
+//Walker constructor
 var Walker = function(x,y){
 	this.x = x;
 	this.y = y;
@@ -27,12 +27,12 @@ var Walker = function(x,y){
 		context.fill();
 		context.stroke();
 	};
-	this.step = function(){ 
+	this.step = function(){
 		var randNum = Math.random();
-		if (randNum < 0.25) { this.y--; } 
+		if (randNum < 0.25) { this.y--; }
 		else if (randNum < 0.5) { this.y++; }
 		else if (randNum < 0.75) { this.x--; }
-		else { this.x++; } 
+		else { this.x++; }
 	};
 	this.step2 = function(canvas){ // Perlin step function
 		this.perlinXSeed += this.perlinIncrement;

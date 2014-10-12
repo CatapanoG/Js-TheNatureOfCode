@@ -1,4 +1,4 @@
-// 
+//
 // A simple Canvas 2d boilerplate
 //
 // Author: Gennaro Catapano
@@ -8,12 +8,12 @@
 //
 // Sets up a Canvas and a loop with 3 components:
 // init(), updateworld() and draw().
-// 
+//
 
 //
 // The nature of code
 // Exercise 1.2
-// 
+//
 // Take one of the walker examples from the introduction and convert it to use PVectors.
 //
 
@@ -23,7 +23,7 @@
 // Using Irwin-Hall approx to std Normal:
 // http://en.wikipedia.org/wiki/Normal_distribution#Generating_values_from_normal_distribution
 
-//Walker constructor 
+//Walker constructor
 var Walker = function(x,y){
 	this.position = new Vector2d(x,y);
 	this.noise = noise.seed(Math.random());
@@ -34,7 +34,7 @@ var Walker = function(x,y){
 		context.strokeStyle = "White";
 		context.lineWidth = 4;
 		context.beginPath();
-		context.arc(this.position.x,this.position.y,32,0,2*Math.PI);
+		context.arc(this.position.x,this.position.y,12,0,2*Math.PI);
 		context.fill();
 		context.stroke();
 	};
