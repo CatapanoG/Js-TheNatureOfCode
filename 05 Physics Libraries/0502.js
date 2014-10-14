@@ -7,37 +7,103 @@
 // www.gennarocatapano.it
 //
 
+// Box2dWeb definitions
+var b2Vec2 = Box2D.Common.Math.b2Vec2,
+	b2BodyDef = Box2D.Dynamics.b2BodyDef,
+	b2Body = Box2D.Dynamics.b2Body,
+	b2FixtureDef = Box2D.Dynamics.b2FixtureDef,
+	b2Fixture = Box2D.Dynamics.b2Fixture,
+	b2World = Box2D.Dynamics.b2World,
+	b2MassData = Box2D.Collision.Shapes.b2MassData,
+	b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape,
+	b2CircleShape = Box2D.Collision.Shapes.b2CircleShape,
+	b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
+// Box2d globals
+var world,
+	gravity,
+	fixDef,
+	bodyDef,
+	debugDraw,
+	worldScale = 10;
+// Exercise globals
 var boxes = [];
 
 function setup(context,canvas) {
+	//create Box2d world
+	world = new b2World(new b2Vec2(0, 10),true);
 
+	//create ground
+    createBox(600,30,400,780,b2Body.b2_staticBody);
 };
 
 function update(canvas){
-
+	world.Step(
+		1 / 60   //frame-rate
+		,  10       //velocity iterations
+		,  10       //position iterations
+	);
 };
 
 function draw(context,canvas) {
-	//background(context,canvas,"Black");
+	background(context,canvas,"Black");
 
+	//draw dynamic boxes
 	for (var i = 0; i < boxes.length; i++) {
 		boxes[i].display(context)
 	};
+
+	//draw ground
+	rectangle(context,100,755,600,30);
 };
 
 function Box(x,y) {
+	this.width = 16;
+	this.height = 16;
 	this.x = x;
 	this.y = y;
-	this.width = this.height = 16;
+	this.angle = 0;
+	this.body;
+
+    var bodyDef = new b2BodyDef;
+    bodyDef.type = b2Body.b2_dynamicBody;
+    bodyDef.position.Set(this.x/worldScale,this.y/worldScale);
+    var polygonShape = new b2PolygonShape;
+    polygonShape.SetAsBox(this.width/2/worldScale,this.height/2/worldScale);
+    var fixtureDef = new b2FixtureDef;
+    fixtureDef.density = 1.0;
+    fixtureDef.friction = 0.5;
+    fixtureDef.restitution = 0.5;
+    fixtureDef.shape = polygonShape;
+    this.body = world.CreateBody(bodyDef);
+    this.body.CreateFixture(fixtureDef); 
 };
 
 Box.prototype = {
 	display : function(context){
 		context.save();
+		this.x = this.body.GetPosition().x*worldScale;
+		this.y = this.body.GetPosition().y*worldScale;
+		this.angle = this.body.GetAngle();
 		context.translate(this.x,this.y);
+		context.rotate(-this.angle);
 		rectangle(context,-this.width,-this.height,this.width,this.height);
 		context.restore();
 	}
+};
+
+function createBox(width,height,pX,pY,type){
+    var bodyDef = new b2BodyDef;
+    bodyDef.type = type;
+    bodyDef.position.Set(pX/worldScale,pY/worldScale);
+    var polygonShape = new b2PolygonShape;
+    polygonShape.SetAsBox(width/2/worldScale,height/2/worldScale);
+    var fixtureDef = new b2FixtureDef;
+    fixtureDef.density = 1.0;
+    fixtureDef.friction = 0.5;
+    fixtureDef.restitution = 0.5;
+    fixtureDef.shape = polygonShape;
+    var body=world.CreateBody(bodyDef);
+    body.CreateFixture(fixtureDef);
 };
 
 // mouseHandler

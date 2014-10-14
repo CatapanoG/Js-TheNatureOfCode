@@ -20,7 +20,6 @@ var oPartSys,
 	oParticleImage = [];
 
 function setup() {
-	alert(viewportHeight);
 	oPartSys = new ParticleSystem(new Vector2d(400,750));
 	//oRepeller = new Repeller(canvas.width/2,canvas.height/2+100);
 };
