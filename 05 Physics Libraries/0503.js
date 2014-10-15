@@ -1,7 +1,7 @@
 //
 // The nature of code - Ch.5 Physics Libraries
 //
-// Example 5.2: Falling boxes hitting boundaries
+// Example 5.3: ChainShape with three hard-coded vertices
 //
 // Example ported-written by: Gennaro Catapano
 // www.gennarocatapano.it
@@ -27,15 +27,21 @@ var world,
 	worldScale = 10;
 // Exercise globals
 var boxes = [],
-	boundaries = [];
+	boundaries = [],
+	chains = [],
+	circles = [];
 
 function setup(context,canvas) {
 	//create Box2d world
 	world = new b2World(new b2Vec2(0, 10),true);
 
-	//create ground
-    boundaries.push(new Boundary(250,600,300,30));
-    boundaries.push(new Boundary(575,550,300,30));
+	//create chains
+	var verts = [];
+	verts[0] = new b2Vec2(0,400);
+	verts[1] = new b2Vec2(100,600); 
+	verts[2] = new b2Vec2(500,500);
+	verts[3] = new b2Vec2(800,400);
+	chains.push(new Chain(verts));
 };
 
 function update(canvas){
@@ -54,12 +60,15 @@ function draw(context,canvas) {
 		boxes[i].display(context);
 	};
 
-	for (var i = 0; i < boundaries.length; i++) {
-		boundaries[i].display(context);
+	//draw chain boundaries
+	for (var i = 0; i < chains.length; i++) {
+		chains[i].display(context);
 	};
 
-	//draw ground
-	rectangle(context,100,765,600,30);
+	//draw circles
+	for (var i = 0; i < circles.length; i++) {
+		circles[i].display(context);
+	};
 };
 
 // BOX
@@ -98,7 +107,42 @@ Box.prototype = {
 	}
 };
 
-//BOUNDARY
+// Circle
+function Circle(x,y) {
+	this.radius = Math.floor(Math.random()*16)+4;
+	this.x = x;
+	this.y = y;
+	this.angle = 0;
+	this.body; // defined below
+
+    var bodyDef = new b2BodyDef;
+    bodyDef.type = b2Body.b2_dynamicBody;
+    bodyDef.position.Set(this.x/worldScale,this.y/worldScale);
+    var polygonShape = new b2CircleShape(this.radius/worldScale);
+    var fixtureDef = new b2FixtureDef;
+    fixtureDef.density = 1.0;
+    fixtureDef.friction = 0.5;
+    fixtureDef.restitution = 0.5;
+    fixtureDef.shape = polygonShape;
+    this.body = world.CreateBody(bodyDef);
+    this.body.CreateFixture(fixtureDef); 
+};
+
+Circle.prototype = {
+	display : function(context){
+		context.save();
+		this.x = this.body.GetPosition().x*worldScale;
+		this.y = this.body.GetPosition().y*worldScale;
+		this.angle = this.body.GetAngle();
+		context.translate(this.x,this.y);
+		context.rotate(this.angle);
+		ellipse(context,0,0,this.radius);
+		line(context,0,0,-this.radius,0);
+		context.restore();
+	}
+};
+
+//BOUNDARY (Rectangular)
 function Boundary(x,y,w,h) {
 	this.width = w;
 	this.height = h;
@@ -134,13 +178,50 @@ Boundary.prototype = {
 	}
 };
 
+//CHAIN Boundary
+function Chain(aVec2) {
+	this.width = 30;
+	this.height = 30;
+	this.vertices = aVec2;
+	this.angle = 0;
+	this.body; // defined below
+
+	for (var i = 0; i < this.vertices.length; i++) {
+		this.vertices[i].Multiply(1/worldScale);
+	};
+
+    var bodyDef = new b2BodyDef;
+    bodyDef.type = b2Body.b2_staticBody;
+    for (var i = 0; i < this.vertices.length - 1; i++) {
+	    var polygonShape = new b2PolygonShape;
+	    polygonShape.SetAsEdge(this.vertices[i],this.vertices[i+1]);
+	    var fixtureDef = new b2FixtureDef;
+	    fixtureDef.density = 1.0;
+	    fixtureDef.friction = 0.5;
+	    fixtureDef.restitution = 0.5;
+	    fixtureDef.shape = polygonShape;
+	    this.body = world.CreateBody(bodyDef);
+	    this.body.CreateFixture(fixtureDef);
+    };
+};
+
+Chain.prototype = {
+	display : function(context){
+		for (var i = 0; i < this.vertices.length - 1; i++) {
+			line(context,this.vertices[i].x*worldScale,this.vertices[i].y*worldScale,
+					 this.vertices[i+1].x*worldScale,this.vertices[i+1].y*worldScale);
+		};
+	}
+};
+
 // mouseHandler
 	function mouseHandler(canvas){
 		canvas.onmousedown = function(e){
 			//mouse.x = e.clientX;
 			//mouse.y = e.clientY;
 
-			boxes.push(new Box(e.clientX,e.clientY));
+			//boxes.push(new Box(e.clientX,e.clientY));
+			circles.push(new Circle(e.clientX,e.clientY));
 		};
 	};
 //

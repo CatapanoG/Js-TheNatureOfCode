@@ -1,7 +1,11 @@
 //
 // The nature of code - Ch.5 Physics Libraries
 //
-// Example 5.2: Falling boxes hitting boundaries
+// Example 5.2: In this chapter’s code downloads, find the sketch named “box2d_exercise.” 
+// Using the methodology outlined in this chapter, 
+// add the necessary code to the main and Box tabs to implement Box2D physics. 
+// The result should appear as in the screenshot above. 
+// Be more creative in how you render the boxes.
 //
 // Example ported-written by: Gennaro Catapano
 // www.gennarocatapano.it
@@ -26,16 +30,14 @@ var world,
 	debugDraw,
 	worldScale = 10;
 // Exercise globals
-var boxes = [],
-	boundaries = [];
+var boxes = [];
 
 function setup(context,canvas) {
 	//create Box2d world
 	world = new b2World(new b2Vec2(0, 10),true);
 
 	//create ground
-    boundaries.push(new Boundary(250,600,300,30));
-    boundaries.push(new Boundary(575,550,300,30));
+    createBox(600,30,400,780,b2Body.b2_staticBody);
 };
 
 function update(canvas){
@@ -51,21 +53,16 @@ function draw(context,canvas) {
 
 	//draw dynamic boxes
 	for (var i = 0; i < boxes.length; i++) {
-		boxes[i].display(context);
-	};
-
-	for (var i = 0; i < boundaries.length; i++) {
-		boundaries[i].display(context);
+		boxes[i].display(context)
 	};
 
 	//draw ground
 	rectangle(context,100,765,600,30);
 };
 
-// BOX
 function Box(x,y) {
-	this.width = Math.floor(Math.random()*16)+4;
-	this.height = Math.floor(Math.random()*16)+4;
+	this.width = 16;
+	this.height = 16;
 	this.x = x;
 	this.y = y;
 	this.angle = 0;
@@ -98,40 +95,19 @@ Box.prototype = {
 	}
 };
 
-//BOUNDARY
-function Boundary(x,y,w,h) {
-	this.width = w;
-	this.height = h;
-	this.x = x;
-	this.y = y;
-	this.angle = 0;
-	this.body; // defined below
-
+function createBox(width,height,pX,pY,type){
     var bodyDef = new b2BodyDef;
-    bodyDef.type = b2Body.b2_staticBody;
-    bodyDef.position.Set(this.x/worldScale,this.y/worldScale);
+    bodyDef.type = type;
+    bodyDef.position.Set(pX/worldScale,pY/worldScale);
     var polygonShape = new b2PolygonShape;
-    polygonShape.SetAsBox(this.width/2/worldScale,this.height/2/worldScale);
+    polygonShape.SetAsBox(width/2/worldScale,height/2/worldScale);
     var fixtureDef = new b2FixtureDef;
     fixtureDef.density = 1.0;
     fixtureDef.friction = 0.5;
     fixtureDef.restitution = 0.5;
     fixtureDef.shape = polygonShape;
-    this.body = world.CreateBody(bodyDef);
-    this.body.CreateFixture(fixtureDef); 
-};
-
-Boundary.prototype = {
-	display : function(context){
-		context.save();
-		this.x = this.body.GetPosition().x*worldScale;
-		this.y = this.body.GetPosition().y*worldScale;
-		this.angle = this.body.GetAngle();
-		context.translate(this.x,this.y);
-		context.rotate(-this.angle);
-		rectangle(context,-this.width/2,-this.height/2,this.width,this.height);
-		context.restore();
-	}
+    var body=world.CreateBody(bodyDef);
+    body.CreateFixture(fixtureDef);
 };
 
 // mouseHandler
