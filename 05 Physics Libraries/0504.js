@@ -1,7 +1,7 @@
 //
 // The nature of code - Ch.5 Physics Libraries
 //
-// Example 5.3: ChainShape with three hard-coded vertices
+// Example 5.4: Polygon shapes
 //
 // Example ported-written by: Gennaro Catapano
 // www.gennarocatapano.it
@@ -29,7 +29,12 @@ var world,
 var boxes = [],
 	boundaries = [],
 	chains = [],
-	circles = [];
+	circles = [],
+	polygons = [],
+	polyShape = [new b2Vec2(-1,-1),
+					new b2Vec2(-1,1.5),
+					new b2Vec2(2,1.7),
+					new b2Vec2(-1,-1)];
 
 function setup(context,canvas) {
 	//create Box2d world
@@ -37,10 +42,11 @@ function setup(context,canvas) {
 
 	//create chains
 	var verts = [];
-	verts[0] = new b2Vec2(0,400);
-	verts[1] = new b2Vec2(100,600); 
-	verts[2] = new b2Vec2(500,500);
-	verts[3] = new b2Vec2(800,400);
+	var steps = 200;
+	for (var i = 0; i <= steps; i++) {
+		verts.push(new b2Vec2(canvas.width*(i/steps),
+							  Math.sin(Math.PI*(i/steps)*3 - Math.PI)*(canvas.height/4)+(canvas.height/2)));
+	};
 	chains.push(new Chain(verts));
 };
 
@@ -68,6 +74,11 @@ function draw(context,canvas) {
 	//draw circles
 	for (var i = 0; i < circles.length; i++) {
 		circles[i].display(context);
+	};
+
+	//draw polygons
+	for (var i = 0; i < polygons.length; i++) {
+		polygons[i].display(context);
 	};
 };
 
@@ -217,6 +228,42 @@ Chain.prototype = {
 	}
 };
 
+//Polygon
+function Polygon(aVec2,posX,posY) {
+	this.vertices = aVec2;
+	this.angle = 0;
+	this.body; // defined below
+
+	for (var i = 0; i < this.vertices.length; i++) {
+		this.vertices[i].x + posX;
+		this.vertices[i].y + posY;
+		this.vertices[i].Multiply(1/worldScale);
+	};
+
+    var bodyDef = new b2BodyDef;
+    bodyDef.type = b2Body.b2_dynamicBody;
+    for (var i = 0; i < this.vertices.length - 1; i++) {
+	    var polygonShape = new b2PolygonShape;
+	    polygonShape.SetAsEdge(this.vertices[i],this.vertices[i+1]);
+	    var fixtureDef = new b2FixtureDef;
+	    fixtureDef.density = 1.0;
+	    fixtureDef.friction = 0.5;
+	    fixtureDef.restitution = 0.5;
+	    fixtureDef.shape = polygonShape;
+	    this.body = world.CreateBody(bodyDef);
+	    this.body.CreateFixture(fixtureDef);
+    };
+};
+
+Polygon.prototype = {
+	display : function(context){
+		for (var i = 0; i < this.vertices.length - 1; i++) {
+			line(context,this.vertices[i].x*worldScale,this.vertices[i].y*worldScale,
+					 this.vertices[i+1].x*worldScale,this.vertices[i+1].y*worldScale);
+		};
+	}
+};
+
 // mouseHandler
 	function mouseHandler(canvas){
 		canvas.onmousedown = function(e){
@@ -224,7 +271,8 @@ Chain.prototype = {
 			//mouse.y = e.clientY;
 
 			//boxes.push(new Box(e.clientX,e.clientY));
-			circles.push(new Circle(e.clientX,e.clientY));
+			//circles.push(new Circle(e.clientX,e.clientY));
+			polygons.push(new Polygon(polyShape,e.clientX,e.clientY));
 		};
 	};
 //
@@ -237,8 +285,8 @@ Chain.prototype = {
 (function main(){
 	// std variables
 	var backgroundColor = "Black",
-		viewportHeight = 800,
-		viewportWidth = 800,
+		viewportHeight = 900,
+		viewportWidth = 900,
 		viewportId = "viewport",
 		canvas,
 		context;

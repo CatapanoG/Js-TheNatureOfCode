@@ -1,7 +1,10 @@
 //
 // The nature of code - Ch.5 Physics Libraries
 //
-// Example 5.3: ChainShape with three hard-coded vertices
+// Exercise 5.3
+// Review how we learned to draw a wave pattern in Chapter 3. 
+// Create a ChainShape object out of a sine wave. 
+// Try using Perlin noise as well.
 //
 // Example ported-written by: Gennaro Catapano
 // www.gennarocatapano.it
@@ -32,15 +35,20 @@ var boxes = [],
 	circles = [];
 
 function setup(context,canvas) {
+	//init Perlin lib
+	noise.seed(Math.random());
+
 	//create Box2d world
 	world = new b2World(new b2Vec2(0, 10),true);
 
 	//create chains
 	var verts = [];
-	verts[0] = new b2Vec2(0,400);
-	verts[1] = new b2Vec2(100,600); 
-	verts[2] = new b2Vec2(500,500);
-	verts[3] = new b2Vec2(800,400);
+	var steps = 200;
+	for (var i = 0; i <= steps; i++) {
+		verts.push(new b2Vec2(canvas.width*(i/steps),
+							  Math.sin(Math.PI*(i/steps)*3 - Math.PI)*(canvas.height/4)+(canvas.height/2) +
+							  noise.perlin2(0.1,0.1*i)*100 ));
+	};
 	chains.push(new Chain(verts));
 };
 
@@ -237,8 +245,8 @@ Chain.prototype = {
 (function main(){
 	// std variables
 	var backgroundColor = "Black",
-		viewportHeight = 800,
-		viewportWidth = 800,
+		viewportHeight = 900,
+		viewportWidth = 900,
 		viewportId = "viewport",
 		canvas,
 		context;
