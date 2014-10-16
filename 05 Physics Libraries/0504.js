@@ -31,10 +31,10 @@ var boxes = [],
 	chains = [],
 	circles = [],
 	polygons = [],
-	polyShape = [new b2Vec2(-1,-1),
-					new b2Vec2(-1,1.5),
-					new b2Vec2(2,1.7),
-					new b2Vec2(-1,-1)];
+	polyShape = [ {x: -1, y:  2},
+				  {x: -3, y: -2},
+				  {x:  3, y: -2},
+				  {x:  1, y:  2}   ];
 
 function setup(context,canvas) {
 	//create Box2d world
@@ -230,37 +230,53 @@ Chain.prototype = {
 
 //Polygon
 function Polygon(aVec2,posX,posY) {
-	this.vertices = aVec2;
+	this.vertices = [];
+	this.position;
 	this.angle = 0;
 	this.body; // defined below
+	this.scaleFact = Math.random();
 
-	for (var i = 0; i < this.vertices.length; i++) {
-		this.vertices[i].x + posX;
-		this.vertices[i].y + posY;
-		this.vertices[i].Multiply(1/worldScale);
+	for (var i = 0; i < aVec2.length; i++) {
+		this.vertices[i] = {x: 0, y:0};
+		this.vertices[i].x = this.scaleFact*aVec2[i].x;
+		this.vertices[i].y = this.scaleFact*aVec2[i].y;
+		//this.vertices[i].Multiply(1/worldScale);
 	};
 
     var bodyDef = new b2BodyDef;
     bodyDef.type = b2Body.b2_dynamicBody;
-    for (var i = 0; i < this.vertices.length - 1; i++) {
-	    var polygonShape = new b2PolygonShape;
-	    polygonShape.SetAsEdge(this.vertices[i],this.vertices[i+1]);
-	    var fixtureDef = new b2FixtureDef;
-	    fixtureDef.density = 1.0;
-	    fixtureDef.friction = 0.5;
-	    fixtureDef.restitution = 0.5;
-	    fixtureDef.shape = polygonShape;
-	    this.body = world.CreateBody(bodyDef);
-	    this.body.CreateFixture(fixtureDef);
-    };
+    bodyDef.position.Set(posX/worldScale,posY/worldScale);
+
+    var polygonShape = new b2PolygonShape;
+    polygonShape.SetAsArray(this.vertices,this.vertices.length);
+    var fixtureDef = new b2FixtureDef;
+    fixtureDef.density = 1.0;
+    fixtureDef.friction = 0.5;
+    fixtureDef.restitution = 0.5;
+    fixtureDef.shape = polygonShape;
+    this.body = world.CreateBody(bodyDef);
+    this.body.CreateFixture(fixtureDef);
+
 };
 
 Polygon.prototype = {
 	display : function(context){
+		this.position = this.body.GetPosition();
+
+		context.save();
+		context.translate(this.position.x*worldScale,this.position.y*worldScale);
+		context.rotate(this.body.GetAngle());
 		for (var i = 0; i < this.vertices.length - 1; i++) {
-			line(context,this.vertices[i].x*worldScale,this.vertices[i].y*worldScale,
-					 this.vertices[i+1].x*worldScale,this.vertices[i+1].y*worldScale);
+			line(context,(this.vertices[i].x)*worldScale,
+						 (this.vertices[i].y)*worldScale,
+					 	 (this.vertices[i+1].x)*worldScale,
+					 	 (this.vertices[i+1].y)*worldScale);
 		};
+			line(context,(this.vertices[this.vertices.length - 1].x)*worldScale,
+						 (this.vertices[this.vertices.length - 1].y)*worldScale,
+					 	 (this.vertices[0].x)*worldScale,
+					 	 (this.vertices[0].y)*worldScale);
+		context.restore();
 	}
 };
 
