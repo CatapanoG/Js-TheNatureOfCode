@@ -40,8 +40,8 @@
 //
 
 // Circle
-	function Circle(x,y) {
-		this.radius = Math.floor(Math.random()*16)+4;
+	function Circle(x,y,radius) {
+		this.radius = radius || Math.floor(Math.random()*16)+4;
 		this.x = x;
 		this.y = y;
 		this.angle = 0;
@@ -392,12 +392,12 @@
 			this.body = undefined;
 		},
 		display: function(context){
-			if (this.mouseJoint != undefined) {
+			/*if (this.mouseJoint != undefined) {
 				line(context,this.body.GetPosition().x*worldScale,
 							this.body.GetPosition().y*worldScale,
 							mouse.x*worldScale,
 							mouse.y*worldScale);
-			};
+			};*/
 		}
 	};
 //

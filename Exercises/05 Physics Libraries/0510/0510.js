@@ -1,7 +1,9 @@
 //
 // The nature of code - Ch.5 Physics Libraries
+// http://natureofcode.com/book/chapter-5-physics-libraries/
 //
-// Example 5.8: MouseJoint demonstration
+// Exercise 5.10
+// Take any example you made previously using a force calculation and bring that force calculation into Box2D.
 //
 // Example ported-written by: Gennaro Catapano
 // www.gennarocatapano.it
@@ -43,35 +45,27 @@ var boxes = [],
 				  {x:  3, y: -2},
 				  {x:  1, y:  2}   ],
 	windmill;
-
-var mouse = new b2Vec2(0,0),
-	selectedBody;
+// Force
+var wind = new b2Vec2(8,0);
 
 function setup(context,canvas) {
 	//create Box2d world
 	world = new b2World(new b2Vec2(0, 10),true);
 
 	//create ground
-	boxes.push(new Box(canvas.width/2,9*canvas.height/10,true,8*canvas.width/10,1*canvas.height/10));
+	boxes.push(new Box(0,canvas.height/2,true,0.5*canvas.width/10,10*canvas.height/10));
+	boxes.push(new Box(canvas.width,canvas.height/2,true,0.5*canvas.width/10,10*canvas.height/10));
+	boxes.push(new Box(canvas.width/2,9.5*canvas.height/10,true,10*canvas.width/10,1*canvas.height/10));
+	boxes.push(new Box(canvas.width/2,0.5*canvas.height/10,true,10*canvas.width/10,1*canvas.height/10));
 
-	//some boxes
-	for (var i = 0; i < 1; i++) {
-		boxes.push(new Box(Math.random()*8*canvas.width/10 + 1*canvas.width/10,
-				   Math.random()*1*canvas.height/10 + 7*canvas.height/10,
-				   false,
-				   0.5*canvas.width/10,
-				   0.5*canvas.width/10));
-	};
-
-
-	//init mouseJoint
-	mouseJoint = new Spring();
+	//create ball
+	circles.push(new Circle(0.5*canvas.width/10,1.5*canvas.height/10,32));
 };
 
 function update(canvas){
-	if (mouseJoint.mouseJoint != undefined) {
-		mouseJoint.update(mouse.x,mouse.y);
-	};
+	var force = new b2Vec2(wind.x*circles[0].body.GetMass(),wind.y*circles[0].body.GetMass());
+	var position = new b2Vec2(circles[0].body.GetPosition().x,circles[0].body.GetPosition().y - circles[0].radius/4);
+	circles[0].body.ApplyForce(force,position);
 
 	world.Step(
 		1 / 60   //frame-rate
@@ -114,61 +108,7 @@ function draw(context,canvas) {
 	for (var i = 0; i < pairs.length; i++) {
 		pairs[i].display(context);
 	};
-
-	mouseJoint.display(context);
 };
-
-// mouseHandler
-	function mouseHandler(canvas){
-		canvas.onmousedown = function(e){
-			//mouse.x = e.clientX;
-			//mouse.y = e.clientY;
-
-			//boxes.push(new Box(e.clientX,e.clientY));
-			//circles.push(new Circle(e.clientX,e.clientY));
-			//polygons.push(new Polygon(polyShape,e.clientX,e.clientY));
-			//composites.push(new Composite(e.clientX,e.clientY));
-			//pairs.push(new Pair(e.clientX,e.clientY));
-
-			var body = getBodyAtMouse();
-			if (body) {
-				mouse.x = e.clientX/worldScale;
-				mouse.y = e.clientY/worldScale;
-				mouseJoint.bind(mouse.x,mouse.y,body);
-			};	
-		};
-		canvas.onmouseup = function(e){
-			if (mouseJoint.mouseJoint != undefined) {
-				mouseJoint.destroy();
-			};
-		};
-		canvas.onmousemove = function(e){
-			mouse.x = e.clientX/worldScale;
-			mouse.y = e.clientY/worldScale;
-		};
-	};
-	function getBodyAtMouse() {
-		var aabb = new b2AABB();
-		aabb.lowerBound.Set(mouse.x - 0.001, mouse.y - 0.001);
-		aabb.upperBound.Set(mouse.x + 0.001, mouse.y + 0.001);
-
-		// Query the world for overlapping shapes.
-
-		selectedBody = null;
-		world.QueryAABB(getBodyCB, aabb);
-		return selectedBody;
-	}
-
-	function getBodyCB(fixture) {
-		if(fixture.GetBody().GetType() != b2Body.b2_staticBody) {
-			if(fixture.GetShape().TestPoint(fixture.GetBody().GetTransform(), mouse)) {
-				  selectedBody = fixture.GetBody();
-				  return false;
-				}
-			}
-		return true;
-	}
-//
 
 //
 // main()
@@ -204,7 +144,7 @@ function draw(context,canvas) {
 		(function init(){
 			// initialize stuff here
 			 //context.globalAlpha = 0.6;
-			 mouseHandler(canvas);
+			 //mouseHandler(canvas);
 			 //keyHandler(canvas);
 			 setup(context,canvas);
 			 updateWorld();

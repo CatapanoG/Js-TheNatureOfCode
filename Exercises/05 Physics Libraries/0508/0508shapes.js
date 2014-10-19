@@ -392,12 +392,12 @@
 			this.body = undefined;
 		},
 		display: function(context){
-			if (this.mouseJoint != undefined) {
+			/*if (this.mouseJoint != undefined) {
 				line(context,this.body.GetPosition().x*worldScale,
 							this.body.GetPosition().y*worldScale,
 							mouse.x*worldScale,
 							mouse.y*worldScale);
-			};
+			};*/
 		}
 	};
 //

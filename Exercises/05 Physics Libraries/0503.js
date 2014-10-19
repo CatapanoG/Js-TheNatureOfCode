@@ -36,7 +36,7 @@ var boxes = [],
 
 function setup(context,canvas) {
 	//create Box2d world
-	world = new b2World(new b2Vec2(0, 10),true);
+	world = new b2World(new b2Vec2(0, 25),true);
 
 	//create chains
 	var verts = [];

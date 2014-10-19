@@ -1,7 +1,11 @@
 //
 // The nature of code - Ch.5 Physics Libraries
+// http://natureofcode.com/book/chapter-5-physics-libraries/
 //
-// Example 5.8: MouseJoint demonstration
+// Exercise 5.8
+// Use a mouse joint to move a Box2D body around the screen according to an algorithm or input other than the mouse. 
+// For example, assign it a location according to Perlin noise or key presses. 
+// Or build your own controller using an Arduino.
 //
 // Example ported-written by: Gennaro Catapano
 // www.gennarocatapano.it
@@ -44,8 +48,12 @@ var boxes = [],
 				  {x:  1, y:  2}   ],
 	windmill;
 
+// Controls
 var mouse = new b2Vec2(0,0),
 	selectedBody;
+
+// Others
+var time = 0;
 
 function setup(context,canvas) {
 	//create Box2d world
@@ -69,8 +77,13 @@ function setup(context,canvas) {
 };
 
 function update(canvas){
+	time += 0.01;
+
 	if (mouseJoint.mouseJoint != undefined) {
-		mouseJoint.update(mouse.x,mouse.y);
+		var x = (Math.sin(time))*0.5*Math.random()*canvas.width/worldScale + 0.5*canvas.width/worldScale;
+		var y = (Math.cos(time))*0.5*Math.random()*canvas.height/worldScale + 0.5*canvas.height/worldScale;
+
+		mouseJoint.update(x, y);
 	};
 
 	world.Step(
@@ -134,14 +147,14 @@ function draw(context,canvas) {
 			if (body) {
 				mouse.x = e.clientX/worldScale;
 				mouse.y = e.clientY/worldScale;
-				mouseJoint.bind(mouse.x,mouse.y,body);
+				mouseJoint.bind(0.5*canvas.width/worldScale,0.5*canvas.height/worldScale,body);
 			};	
 		};
-		canvas.onmouseup = function(e){
+		/*canvas.onmouseup = function(e){
 			if (mouseJoint.mouseJoint != undefined) {
 				mouseJoint.destroy();
 			};
-		};
+		};*/
 		canvas.onmousemove = function(e){
 			mouse.x = e.clientX/worldScale;
 			mouse.y = e.clientY/worldScale;
@@ -158,7 +171,6 @@ function draw(context,canvas) {
 		world.QueryAABB(getBodyCB, aabb);
 		return selectedBody;
 	}
-
 	function getBodyCB(fixture) {
 		if(fixture.GetBody().GetType() != b2Body.b2_staticBody) {
 			if(fixture.GetShape().TestPoint(fixture.GetBody().GetTransform(), mouse)) {
