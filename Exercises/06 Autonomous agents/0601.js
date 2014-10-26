@@ -1,7 +1,7 @@
 //
 // The nature of code - Ch.6 Autonomous agents
 //
-// Example 6.1: Seeking a target
+// Exercise 6.1: Implement a “fleeing” steering behavior (desired vector is inverse of “seek”).
 //
 // Ported by: Gennaro Catapano
 //
@@ -19,8 +19,9 @@ function setup(context,canvas) {
 };
 
 function update(canvas){
-	vehicle.seek(mouse);
+	vehicle.flee(mouse);
 	vehicle.update();
+	vehicle.checkEdges(canvas);
 };
 
 function draw(context,canvas) {
@@ -103,6 +104,14 @@ function draw(context,canvas) {
 			var steer = Vector2d.prototype.sub(desired,this.velocity);
 			steer.limit(this.maxforce);
 			this.applyForce(steer);
+		},
+		flee: function(vector2d){
+			var desired = Vector2d.prototype.sub(vector2d,this.location);
+			desired.normalize();
+			desired.mult(-1*this.maxspeed);
+			var steer = Vector2d.prototype.sub(desired,this.velocity);
+			steer.limit(this.maxforce);
+			this.applyForce(steer);			
 		}
 	};
 //
