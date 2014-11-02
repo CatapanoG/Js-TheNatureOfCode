@@ -1,12 +1,10 @@
 //
 // The nature of code - Ch.6 Autonomous agents
 //
-// Exercise 6.2: 
+// Exercise 6.3: 
 //
-// Implement seeking a moving target, often referred to as “pursuit.” 
-// In this case, your desired vector won’t point towards the object’s current location, 
-// but rather its “future” location as extrapolated from its current velocity. 
-// We’ll see this ability for a vehicle to “predict the future” in later examples
+// Create a sketch where a vehicle’s maximum force and maximum speed do not remain constant, 
+// but rather vary according to environmental factors.
 //
 // Ported by: Gennaro Catapano
 //
@@ -59,6 +57,8 @@ var mouse,
 			updateWorld();
 		}());
 		function updateWorld(){
+			Ambient.update();
+
 			trigoRunner.trigoRun();
 			trigoRunner.update();
 			trigoRunner.checkEdges(canvas);
@@ -70,7 +70,7 @@ var mouse,
 			render();
 		};
 		function render(){
-			background(context,canvas,"Black");
+			background(context,canvas,Ambient.getBgColor());
 
 			trigoRunner.display(context);
 			vehicle.display(context);			

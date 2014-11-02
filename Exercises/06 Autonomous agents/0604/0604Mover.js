@@ -1,40 +1,41 @@
 // Vehicle object
 	function Vehicle (x,y){
-		this.location = new Vector2d(
-			x,
-			y
-			);
-		this.velocity = new Vector2d(
-			0,
-			0
-			);
-		this.acceleration = new Vector2d(
-			0,
-			0
-			);
+		this.location = new Vector2d(x,y);
+		this.velocity = new Vector2d(0,0);
+		this.acceleration = new Vector2d(0,0);
+		this.theta = 0;
 
 		this.r = 5;
+		this.iniMaxforce = 0.1;
 		this.maxforce = 0.1;
+		this.iniMaxspeed = 4;
 		this.maxspeed = 4;
 		this.edgeRestitution = 0.5;
 
 		this.strokeColor = "Red";
+
+		//wandering stuff
+		this.futLocation;
+		this.futDesired;
 	};
 
 	Vehicle.prototype = {
 		update: function(){
+			this.maxforce = this.iniMaxforce * Ambient.getSpeedMult();
+			this.maxspeed = this.iniMaxspeed * Ambient.getSpeedMult();
+
 			this.velocity.add(this.acceleration);
-			this.velocity.limit(this.topSpeed);
+			this.velocity.limit(this.maxspeed);
 			this.location.add(this.velocity);
 			this.acceleration.mult(0);
+
+			this.theta = Math.atan2(this.velocity.y,this.velocity.x) + Math.PI/2;
 		},
 		display: function(context){
 			context.save();
-			var theta = Math.atan2(this.velocity.y,this.velocity.x) + Math.PI/2;
-			//var theta = Math.PI/3;
-
+			
 			context.translate(this.location.x,this.location.y);
-			context.rotate(theta);
+			context.rotate(this.theta);
 			
 			triangle(context,
 				new Vector2d(0, - this.r*4),
@@ -89,6 +90,26 @@
 		pursuit: function(refVehicle){
 			var desired = Vector2d.prototype.add(refVehicle.location,refVehicle.velocity);
 			this.seek(desired);
+		},
+		wander: function(){
+			var step = 100;
+			var futureLoc = new Vector2d(
+				Math.cos(this.theta - Math.PI/2)*step + this.location.x,
+				Math.sin(this.theta - Math.PI/2)*step + this.location.y);
+			this.futLocation = futureLoc;
+
+			var r = 35;
+			var rndTheta = Math.random()*Math.PI*2;
+			var futureDes = new Vector2d(
+				Math.cos(rndTheta - Math.PI/2)*r + this.futLocation.x,
+				Math.sin(rndTheta - Math.PI/2)*r + this.futLocation.y);
+			this.futDesired = futureDes;
+
+			this.seek(this.futDesired);
+		},
+		displayWander: function(context){
+			ellipse(context,this.futLocation.x,this.futLocation.y,4,"White");
+			ellipse(context,this.futDesired.x,this.futDesired.y,4,"White");
 		}
 	};
 //
@@ -100,7 +121,10 @@
 			Math.random()*canvas.height);
 
 		this.t = 0;
-		this.maxspeed = 4.0;
+		this.iniMaxforce = 0.15;
+		this.maxforce = 0.1;
+		this.iniMaxspeed = 4.5;
+		this.maxspeed = 4;
 
 		this.strokeColor = "Orange";
 	};

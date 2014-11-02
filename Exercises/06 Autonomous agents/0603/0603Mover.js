@@ -1,20 +1,13 @@
 // Vehicle object
 	function Vehicle (x,y){
-		this.location = new Vector2d(
-			x,
-			y
-			);
-		this.velocity = new Vector2d(
-			0,
-			0
-			);
-		this.acceleration = new Vector2d(
-			0,
-			0
-			);
+		this.location = new Vector2d(x,y);
+		this.velocity = new Vector2d(0,0);
+		this.acceleration = new Vector2d(0,0);
 
 		this.r = 5;
+		this.iniMaxforce = 0.1;
 		this.maxforce = 0.1;
+		this.iniMaxspeed = 4;
 		this.maxspeed = 4;
 		this.edgeRestitution = 0.5;
 
@@ -23,8 +16,11 @@
 
 	Vehicle.prototype = {
 		update: function(){
+			this.maxforce = this.iniMaxforce * Ambient.getSpeedMult();
+			this.maxspeed = this.iniMaxspeed * Ambient.getSpeedMult();
+
 			this.velocity.add(this.acceleration);
-			this.velocity.limit(this.topSpeed);
+			this.velocity.limit(this.maxspeed);
 			this.location.add(this.velocity);
 			this.acceleration.mult(0);
 		},
@@ -100,7 +96,7 @@
 			Math.random()*canvas.height);
 
 		this.t = 0;
-		this.maxspeed = 4.0;
+		this.maxspeed = 4.5;
 
 		this.strokeColor = "Orange";
 	};
